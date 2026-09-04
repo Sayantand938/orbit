@@ -33,7 +33,7 @@ import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon } from 'lucide-react'
 interface DataPageProps<T> {
     title: string
     data: T[]
-    columns: {
+    columns: readonly {
         header: string
         accessor: keyof T | ((item: T) => React.ReactNode)
     }[]
@@ -55,7 +55,7 @@ export function DataPage<T extends { id: string | number }>({
     const [searchTerm, setSearchTerm] = useState('')
     const [open, setOpen] = useState(false)
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-    const [datePickerOpen, setDatePickerOpen] = useState(false) // 👈 new state
+    const [datePickerOpen, setDatePickerOpen] = useState(false)
 
     const filteredData = data.filter((item) => {
         const searchMatch = JSON.stringify(item)
@@ -84,19 +84,19 @@ export function DataPage<T extends { id: string | number }>({
         <div className="p-6 space-y-4">
             <h1 className="text-2xl font-bold">{title}</h1>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
                 <Input
                     placeholder={searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
+                    className="flex-1"
                 />
 
                 {dateFilterKey && (
                     <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                         <PopoverTrigger
                             render={
-                                <Button variant="outline" size="sm" className="gap-2">
+                                <Button variant="outline" size="sm" className="gap-2 shrink-0">
                                     <CalendarIcon className="size-4" />
                                     {format(selectedDate, 'PPP')}
                                 </Button>
@@ -109,7 +109,7 @@ export function DataPage<T extends { id: string | number }>({
                                 onSelect={(date) => {
                                     if (date) {
                                         setSelectedDate(date)
-                                        setDatePickerOpen(false) // 👈 close popover after selection
+                                        setDatePickerOpen(false)
                                     }
                                 }}
                             />
