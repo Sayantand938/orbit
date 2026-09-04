@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz' // <-- Changed from utcToZonedTime
+import { toZonedTime } from 'date-fns-tz'
 import { DataPage } from '@/components/DataPage'
 import { type Transaction } from '@/data/types'
 import { initialTransactions } from '@/data/mockData'
@@ -8,16 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
-// IST timezone identifier
 const TIMEZONE = 'Asia/Kolkata'
 
-// Format a UTC date string to IST with desired format
 function formatEventTime(utcDate: string): string {
     if (!utcDate) return 'N/A'
-    const date = new Date(utcDate)
-    // Convert to IST
-    const zonedDate = toZonedTime(date, TIMEZONE) // <-- Changed from utcToZonedTime
-    return format(zonedDate, 'yyyy-MM-dd HH:mm')
+    return format(toZonedTime(new Date(utcDate), TIMEZONE), 'yyyy-MM-dd HH:mm')
 }
 
 export function Transactions() {
@@ -52,12 +47,10 @@ export function Transactions() {
                     onSubmit={(e) => {
                         e.preventDefault()
                         const formData = new FormData(e.currentTarget)
-
                         let eventTime = formData.get('event_time') as string
                         if (!eventTime) {
                             eventTime = new Date().toISOString()
                         }
-
                         onSubmit({
                             description: formData.get('description') as string,
                             amount: parseFloat(formData.get('amount') as string),
@@ -69,27 +62,27 @@ export function Transactions() {
                     }}
                     className="space-y-4"
                 >
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="description">Description *</Label>
                         <Input id="description" name="description" required />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="amount">Amount (₹) *</Label>
                         <Input id="amount" name="amount" type="number" step="0.01" required />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="category">Category *</Label>
                         <Input id="category" name="category" required />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="location">Location</Label>
                         <Input id="location" name="location" />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="tags">Tags (comma separated)</Label>
                         <Input id="tags" name="tags" placeholder="e.g. food, lunch, quick" />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="event_time">Event Time</Label>
                         <Input id="event_time" name="event_time" type="datetime-local" />
                         <p className="text-xs text-muted-foreground mt-1">

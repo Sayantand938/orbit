@@ -38,12 +38,10 @@ export function Logs() {
                     onSubmit={(e) => {
                         e.preventDefault()
                         const formData = new FormData(e.currentTarget)
-
                         let eventTime = formData.get('event_time') as string
                         if (!eventTime) {
                             eventTime = new Date().toISOString()
                         }
-
                         onSubmit({
                             description: formData.get('description') as string,
                             category: formData.get('category') as string,
@@ -54,23 +52,23 @@ export function Logs() {
                     }}
                     className="space-y-4"
                 >
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="description">Description *</Label>
                         <Input id="description" name="description" required />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="category">Category *</Label>
                         <Input id="category" name="category" required />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="tags">Tags (comma separated)</Label>
                         <Input id="tags" name="tags" placeholder="e.g. system, auth" />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="place">Place</Label>
                         <Input id="place" name="place" />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="event_time">Event Time</Label>
                         <Input id="event_time" name="event_time" type="datetime-local" />
                         <p className="text-xs text-muted-foreground mt-1">

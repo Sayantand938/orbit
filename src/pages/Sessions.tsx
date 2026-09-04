@@ -40,22 +40,16 @@ export function Sessions() {
                     onSubmit={(e) => {
                         e.preventDefault()
                         const formData = new FormData(e.currentTarget)
-
-                        // Convert local datetime inputs to ISO strings
                         let startTime = formData.get('startTime') as string
                         let endTime = formData.get('endTime') as string
-
-                        // If startTime is empty, set to now
                         if (!startTime) {
                             startTime = new Date().toISOString()
                         }
-                        // If endTime is empty, set to 1 hour later
                         if (!endTime) {
                             const end = new Date(startTime)
                             end.setHours(end.getHours() + 1)
                             endTime = end.toISOString()
                         }
-
                         onSubmit({
                             description: formData.get('description') as string,
                             tags: formData.get('tags') as string,
@@ -65,22 +59,22 @@ export function Sessions() {
                     }}
                     className="space-y-4"
                 >
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="description">Description *</Label>
                         <Input id="description" name="description" required />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="tags">Tags (comma separated)</Label>
                         <Input id="tags" name="tags" placeholder="e.g. coding, react" />
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="startTime">Start Time</Label>
                         <Input id="startTime" name="startTime" type="datetime-local" />
                         <p className="text-xs text-muted-foreground mt-1">
                             Leave blank to use current time.
                         </p>
                     </div>
-                    <div>
+                    <div className="space-y-1.5">
                         <Label htmlFor="endTime">End Time</Label>
                         <Input id="endTime" name="endTime" type="datetime-local" />
                         <p className="text-xs text-muted-foreground mt-1">
