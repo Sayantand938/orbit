@@ -42,6 +42,7 @@ export function Transactions() {
             data={transactions}
             columns={columns}
             onAdd={handleAdd}
+            dateFilterKey="event_time"
             renderForm={(onSubmit, close) => (
                 <form
                     onSubmit={(e) => {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { format } from 'date-fns'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +22,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Calendar } from '@/components/ui/calendar'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
+import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon } from 'lucide-react'
 
 interface DataPageProps<T> {
     title: string
@@ -33,6 +40,7 @@ interface DataPageProps<T> {
     renderForm: (onSubmit: (newItem: Omit<T, 'id'>) => void, closeDialog: () => void) => React.ReactNode
     onAdd: (newItem: Omit<T, 'id'>) => void
     searchPlaceholder?: string
+    dateFilterKey?: keyof T
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -42,24 +50,73 @@ export function DataPage<T extends { id: string | number }>({
     renderForm,
     onAdd,
     searchPlaceholder = 'Search...',
+    dateFilterKey,
 }: DataPageProps<T>) {
     const [searchTerm, setSearchTerm] = useState('')
     const [open, setOpen] = useState(false)
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+    const [datePickerOpen, setDatePickerOpen] = useState(false) // 👈 new state
 
-    const filteredData = data.filter((item) =>
-        JSON.stringify(item).toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredData = data.filter((item) => {
+        const searchMatch = JSON.stringify(item)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        if (!searchMatch) return false
+
+        if (dateFilterKey) {
+            const dateField = item[dateFilterKey]
+            if (dateField) {
+                const itemDate = new Date(dateField as string)
+                const isSameDay =
+                    itemDate.getFullYear() === selectedDate.getFullYear() &&
+                    itemDate.getMonth() === selectedDate.getMonth() &&
+                    itemDate.getDate() === selectedDate.getDate()
+                if (!isSameDay) return false
+            } else {
+                return false
+            }
+        }
+
+        return true
+    })
 
     return (
         <div className="p-6 space-y-4">
             <h1 className="text-2xl font-bold">{title}</h1>
 
-            <Input
-                placeholder={searchPlaceholder}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
-            />
+            <div className="flex flex-wrap items-center gap-2">
+                <Input
+                    placeholder={searchPlaceholder}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+
+                {dateFilterKey && (
+                    <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                        <PopoverTrigger
+                            render={
+                                <Button variant="outline" size="sm" className="gap-2">
+                                    <CalendarIcon className="size-4" />
+                                    {format(selectedDate, 'PPP')}
+                                </Button>
+                            }
+                        />
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={(date) => {
+                                    if (date) {
+                                        setSelectedDate(date)
+                                        setDatePickerOpen(false) // 👈 close popover after selection
+                                    }
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                )}
+            </div>
 
             <div className="border rounded-md">
                 <Table>
@@ -75,7 +132,7 @@ export function DataPage<T extends { id: string | number }>({
                         {filteredData.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length + 1} className="text-center text-muted-foreground">
-                                    No items found.
+                                    No items found for this date.
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -120,7 +177,6 @@ export function DataPage<T extends { id: string | number }>({
                 </Table>
             </div>
 
-            {/* Floating Action Button */}
             <Button
                 className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50"
                 size="icon"

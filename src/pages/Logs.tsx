@@ -33,6 +33,7 @@ export function Logs() {
             data={logs}
             columns={columns}
             onAdd={handleAdd}
+            dateFilterKey="event_time"
             renderForm={(onSubmit, close) => (
                 <form
                     onSubmit={(e) => {

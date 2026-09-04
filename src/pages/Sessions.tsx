@@ -35,6 +35,7 @@ export function Sessions() {
             data={sessions}
             columns={columns}
             onAdd={handleAdd}
+            dateFilterKey="startTime"
             renderForm={(onSubmit, close) => (
                 <form
                     onSubmit={(e) => {
