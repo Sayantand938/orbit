@@ -5,7 +5,7 @@ import { initialSessions } from '@/data/mockData'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { formatIST } from '@/lib/time'
+import { formatIST, getLocalDateTimeInput } from '@/lib/time'
 
 export function Sessions() {
     const [sessions, setSessions] = useState(initialSessions)
@@ -70,14 +70,24 @@ export function Sessions() {
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="startTime">Start Time</Label>
-                        <Input id="startTime" name="startTime" type="datetime-local" />
+                        <Input
+                            id="startTime"
+                            name="startTime"
+                            type="datetime-local"
+                            defaultValue={getLocalDateTimeInput()} // 👈 auto‑fill current time
+                        />
                         <p className="text-xs text-muted-foreground mt-1">
-                            Leave blank to use current time.
+                            Pre‑filled with current time – you can change it.
                         </p>
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="endTime">End Time</Label>
-                        <Input id="endTime" name="endTime" type="datetime-local" />
+                        <Input
+                            id="endTime"
+                            name="endTime"
+                            type="datetime-local"
+                        // 👈 no default – left blank
+                        />
                         <p className="text-xs text-muted-foreground mt-1">
                             Leave blank to set 1 hour after start.
                         </p>

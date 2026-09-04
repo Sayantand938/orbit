@@ -7,6 +7,7 @@ import { initialTransactions } from '@/data/mockData'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { getLocalDateTimeInput } from '@/lib/time'
 
 const TIMEZONE = 'Asia/Kolkata'
 
@@ -85,9 +86,14 @@ export function Transactions() {
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="event_time">Event Time</Label>
-                        <Input id="event_time" name="event_time" type="datetime-local" />
+                        <Input
+                            id="event_time"
+                            name="event_time"
+                            type="datetime-local"
+                            defaultValue={getLocalDateTimeInput()} // 👈 auto‑fill current time
+                        />
                         <p className="text-xs text-muted-foreground mt-1">
-                            Leave blank to use current time.
+                            Pre‑filled with current time – you can change it.
                         </p>
                     </div>
                     <div className="flex justify-end gap-2">
