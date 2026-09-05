@@ -29,6 +29,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover'
 import { Plus, MoreVertical, Pencil, Trash2, CalendarIcon } from 'lucide-react'
+import { getISODatePartsInIST } from '@/lib/time'
 
 interface DataPageProps<T> {
     title: string
@@ -74,17 +75,18 @@ export function DataPage<T extends { id: string | number }>({
 
         if (dateFilterKey) {
             const dateField = item[dateFilterKey]
-            if (dateField) {
-                const itemDate = new Date(dateField as string)
-                if (isNaN(itemDate.getTime())) return false
-                const isSameDay =
-                    itemDate.getFullYear() === selectedDate.getFullYear() &&
-                    itemDate.getMonth() === selectedDate.getMonth() &&
-                    itemDate.getDate() === selectedDate.getDate()
-                if (!isSameDay) return false
-            } else {
-                return false
-            }
+            if (!dateField) return false
+
+            const itemDate = new Date(dateField as string)
+            if (isNaN(itemDate.getTime())) return false
+
+            const { year, month, day } = getISODatePartsInIST(dateField as string)
+            const isSameDay =
+                year === selectedDate.getFullYear() &&
+                month === selectedDate.getMonth() &&
+                day === selectedDate.getDate()
+
+            return isSameDay
         }
 
         return true

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
-import { type Transaction } from '@/data/types'
+import type { Transaction } from '@/data/types'
 
 type TransactionStore = {
     items: Transaction[]
@@ -8,11 +8,11 @@ type TransactionStore = {
     error: string | null
     fetchItems: () => Promise<void>
     addItem: (item: Omit<Transaction, 'id'>) => Promise<void>
-    updateItem: (id: string, updates: Omit<Transaction, 'id'>) => Promise<void>
-    deleteItem: (id: string) => Promise<void>
+    updateItem: (id: string | number, updates: Omit<Transaction, 'id'>) => Promise<void>
+    deleteItem: (id: string | number) => Promise<void>
 }
 
-export const useTransactionStore = create<TransactionStore>((set, get) => ({
+export const useTransactionStore = create<TransactionStore>((set) => ({
     items: [],
     loading: false,
     error: null,
@@ -49,23 +49,25 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
     },
 
     updateItem: async (id, updates) => {
+        const idStr = String(id)
         const { data, error } = await supabase
             .from('transactions')
             .update(updates)
-            .eq('id', id)
+            .eq('id', idStr)
             .select()
             .single()
         if (error) throw error
         set((state) => ({
-            items: state.items.map((item) => (item.id === id ? data : item)),
+            items: state.items.map((item) => (item.id === idStr ? data : item)),
         }))
     },
 
     deleteItem: async (id) => {
-        const { error } = await supabase.from('transactions').delete().eq('id', id)
+        const idStr = String(id)
+        const { error } = await supabase.from('transactions').delete().eq('id', idStr)
         if (error) throw error
         set((state) => ({
-            items: state.items.filter((item) => item.id !== id),
+            items: state.items.filter((item) => item.id !== idStr),
         }))
     },
 }))

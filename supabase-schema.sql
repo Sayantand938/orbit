@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Transactions table
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   description TEXT NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE transactions (
 );
 
 -- Logs table
-CREATE TABLE logs (
+CREATE TABLE IF NOT EXISTS logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   description TEXT NOT NULL,
@@ -26,15 +26,15 @@ CREATE TABLE logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Sessions table
-CREATE TABLE sessions (
+-- Sessions table – now using camelCase to match frontend code
+CREATE TABLE IF NOT EXISTS sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   description TEXT NOT NULL,
   category TEXT NOT NULL,
   tags TEXT,
-  start_time TIMESTAMP WITH TIME ZONE NOT NULL,
-  end_time TIMESTAMP WITH TIME ZONE,   -- can be NULL (manual entry)
+  "startTime" TIMESTAMP WITH TIME ZONE NOT NULL,   -- renamed from start_time
+  "endTime" TIMESTAMP WITH TIME ZONE,              -- renamed from end_time
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

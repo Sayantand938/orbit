@@ -9,8 +9,13 @@ interface DateTimeValues {
 }
 
 function buildISO(date: string, time: string): string {
-    if (!date || !time) return '';
-    return `${date}T${time}:00.000Z`;
+    if (!date || !time) return ''
+    const [year, month, day] = date.split('-').map(Number)
+    const [hours, minutes] = time.split(':').map(Number)
+    // Month is 0-indexed in JavaScript Date
+    const localDate = new Date(year, month - 1, day, hours, minutes)
+    if (isNaN(localDate.getTime())) return ''
+    return localDate.toISOString()
 }
 
 function getCurrentDateTime(): DateTimeValues {
@@ -55,7 +60,22 @@ export function FormFields({
     errors?: Record<string, string>;
     initialValues?: Record<string, string>;
 }) {
-    // State for datetime values per field
+    const [values, setValues] = useState<Record<string, string>>(() => {
+        const initial: Record<string, string> = {};
+        for (const field of fields) {
+            if (field.type === 'datetime-local') continue;
+            const initVal = initialValues?.[field.name];
+            if (initVal !== undefined) {
+                initial[field.name] = initVal;
+            } else if (field.defaultValue) {
+                initial[field.name] = field.defaultValue;
+            } else {
+                initial[field.name] = '';
+            }
+        }
+        return initial;
+    });
+
     const [datetimeValues, setDatetimeValues] = useState<Record<string, DateTimeValues>>(() => {
         const initial: Record<string, DateTimeValues> = {};
         for (const field of fields) {
@@ -74,8 +94,6 @@ export function FormFields({
         return initial;
     });
 
-    // If initialValues changes (e.g., when editing), update datetime state accordingly.
-    // We only depend on initialValues and the list of field names (stable).
     useEffect(() => {
         for (const field of fields) {
             if (field.type === 'datetime-local') {
@@ -94,13 +112,21 @@ export function FormFields({
                         [field.name]: field.autoFill ? getCurrentDateTime() : { date: '', time: '' },
                     }));
                 }
+            } else {
+                const initVal = initialValues?.[field.name];
+                if (initVal !== undefined) {
+                    setValues((prev) => ({
+                        ...prev,
+                        [field.name]: initVal,
+                    }));
+                }
             }
         }
-        // ✅ we intentionally omit `fields` from dependencies because it's stable,
-        // and we only need to react to initialValues changes.
-        // If you prefer to keep it, it's safe, but this avoids unnecessary re-runs.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialValues]);
+    }, [initialValues, fields]);
+
+    const handleValueChange = (fieldName: string, value: string) => {
+        setValues((prev) => ({ ...prev, [fieldName]: value }));
+    };
 
     const updateDateTime = (fieldName: string, part: 'date' | 'time', value: string) => {
         setDatetimeValues((prev) => ({
@@ -116,9 +142,47 @@ export function FormFields({
         <>
             {fields.map((field) => {
                 const error = errors[field.name];
-                let defaultValue = field.defaultValue;
-                if (initialValues && field.name in initialValues) {
-                    defaultValue = initialValues[field.name];
+
+                if (field.type !== 'datetime-local') {
+                    return (
+                        <div key={field.name} className="space-y-1.5">
+                            <Label htmlFor={field.name}>
+                                {field.label}
+                                {field.required && ' *'}
+                            </Label>
+
+                            {field.type === 'select' ? (
+                                <select
+                                    id={field.name}
+                                    name={field.name}
+                                    className="w-full rounded-md border border-input bg-background p-2 text-sm"
+                                    required={field.required}
+                                    value={values[field.name] || ''}
+                                    onChange={(e) => handleValueChange(field.name, e.target.value)}
+                                >
+                                    <option value="">Select...</option>
+                                    {field.options?.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <Input
+                                    id={field.name}
+                                    name={field.name}
+                                    type={field.type}
+                                    placeholder={field.placeholder}
+                                    required={field.required}
+                                    value={values[field.name] || ''}
+                                    onChange={(e) => handleValueChange(field.name, e.target.value)}
+                                />
+                            )}
+
+                            {field.hint && <p className="mt-1 text-xs text-muted-foreground">{field.hint}</p>}
+                            {error && <p className="text-sm text-destructive">{error}</p>}
+                        </div>
+                    );
                 }
 
                 return (
@@ -127,67 +191,40 @@ export function FormFields({
                             {field.label}
                             {field.required && ' *'}
                         </Label>
-
-                        {field.type === 'select' ? (
-                            <select
-                                id={field.name}
-                                name={field.name}
-                                className="w-full rounded-md border border-input bg-background p-2 text-sm"
-                                required={field.required}
-                                defaultValue={defaultValue}
-                            >
-                                {field.options?.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
-                        ) : field.type === 'datetime-local' ? (
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex items-center gap-1 flex-1 min-w-[140px]">
-                                    <Label htmlFor={`${field.name}-date`} className="sr-only">Date</Label>
-                                    <Input
-                                        id={`${field.name}-date`}
-                                        type="text"
-                                        placeholder="YYYY-MM-DD"
-                                        value={datetimeValues[field.name]?.date || ''}
-                                        onChange={(e) => updateDateTime(field.name, 'date', e.target.value)}
-                                        className="flex-1"
-                                        required={field.required}
-                                    />
-                                </div>
-                                <div className="flex items-center gap-1 flex-1 min-w-[100px]">
-                                    <Label htmlFor={`${field.name}-time`} className="sr-only">Time</Label>
-                                    <Input
-                                        id={`${field.name}-time`}
-                                        type="text"
-                                        placeholder="HH:MM"
-                                        value={datetimeValues[field.name]?.time || ''}
-                                        onChange={(e) => updateDateTime(field.name, 'time', e.target.value)}
-                                        className="flex-1"
-                                        required={field.required}
-                                    />
-                                </div>
-                                <input
-                                    type="hidden"
-                                    name={field.name}
-                                    value={buildISO(
-                                        datetimeValues[field.name]?.date || '',
-                                        datetimeValues[field.name]?.time || ''
-                                    )}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-1 flex-1 min-w-[140px]">
+                                <Label htmlFor={`${field.name}-date`} className="sr-only">Date</Label>
+                                <Input
+                                    id={`${field.name}-date`}
+                                    type="text"
+                                    placeholder="YYYY-MM-DD"
+                                    value={datetimeValues[field.name]?.date || ''}
+                                    onChange={(e) => updateDateTime(field.name, 'date', e.target.value)}
+                                    className="flex-1"
+                                    required={field.required}
                                 />
                             </div>
-                        ) : (
-                            <Input
-                                id={field.name}
+                            <div className="flex items-center gap-1 flex-1 min-w-[100px]">
+                                <Label htmlFor={`${field.name}-time`} className="sr-only">Time</Label>
+                                <Input
+                                    id={`${field.name}-time`}
+                                    type="text"
+                                    placeholder="HH:MM"
+                                    value={datetimeValues[field.name]?.time || ''}
+                                    onChange={(e) => updateDateTime(field.name, 'time', e.target.value)}
+                                    className="flex-1"
+                                    required={field.required}
+                                />
+                            </div>
+                            <input
+                                type="hidden"
                                 name={field.name}
-                                type={field.type}
-                                placeholder={field.placeholder}
-                                required={field.required}
-                                defaultValue={defaultValue}
+                                value={buildISO(
+                                    datetimeValues[field.name]?.date || '',
+                                    datetimeValues[field.name]?.time || ''
+                                )}
                             />
-                        )}
-
+                        </div>
                         {field.hint && <p className="mt-1 text-xs text-muted-foreground">{field.hint}</p>}
                         {error && <p className="text-sm text-destructive">{error}</p>}
                     </div>

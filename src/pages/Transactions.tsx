@@ -1,15 +1,26 @@
-import { DataPage } from '@/components/DataPage';
-import { DataPageForm } from '@/components/DataPageForm';
-import { pageConfigs } from '@/config/pages';
-import { useTransactionStore } from '@/stores/useTransactionStore';
-import { transactionFormSchema } from '@/lib/validation';
+import { useEffect } from 'react'
+import { DataPage } from '@/components/DataPage'
+import { DataPageForm } from '@/components/DataPageForm'
+import { pageConfigs } from '@/config/pages'
+import { useTransactionStore } from '@/stores/useTransactionStore'
+import { transactionFormSchema } from '@/lib/validation'
+import { Spinner } from '@/components/ui/spinner'   // 👈 import
 
 export function Transactions() {
-    const items = useTransactionStore((state) => state.items);
-    const addItem = useTransactionStore((state) => state.addItem);
-    const updateItem = useTransactionStore((state) => state.updateItem);
-    const deleteItem = useTransactionStore((state) => state.deleteItem);
-    const config = pageConfigs.transactions;
+    const { items, loading, error, fetchItems, addItem, updateItem, deleteItem } = useTransactionStore()
+    const config = pageConfigs.transactions
+
+    useEffect(() => {
+        fetchItems()
+    }, [])
+
+    if (loading) return (
+        <div className="flex h-full items-center justify-center">
+            <Spinner size="lg" />
+        </div>
+    )
+
+    if (error) return <div className="p-6 text-destructive">Error: {error}</div>
 
     return (
         <DataPage
@@ -31,5 +42,5 @@ export function Transactions() {
                 />
             )}
         />
-    );
+    )
 }

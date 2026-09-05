@@ -1,15 +1,26 @@
-import { DataPage } from '@/components/DataPage';
-import { DataPageForm } from '@/components/DataPageForm';
-import { pageConfigs } from '@/config/pages';
-import { useLogStore } from '@/stores/useLogStore';
-import { logFormSchema } from '@/lib/validation';
+import { useEffect } from 'react'
+import { DataPage } from '@/components/DataPage'
+import { DataPageForm } from '@/components/DataPageForm'
+import { pageConfigs } from '@/config/pages'
+import { useLogStore } from '@/stores/useLogStore'
+import { logFormSchema } from '@/lib/validation'
+import { Spinner } from '@/components/ui/spinner'   // 👈 import
 
 export function Logs() {
-    const items = useLogStore((state) => state.items);
-    const addItem = useLogStore((state) => state.addItem);
-    const updateItem = useLogStore((state) => state.updateItem);
-    const deleteItem = useLogStore((state) => state.deleteItem);
-    const config = pageConfigs.logs;
+    const { items, loading, error, fetchItems, addItem, updateItem, deleteItem } = useLogStore()
+    const config = pageConfigs.logs
+
+    useEffect(() => {
+        fetchItems()
+    }, [])
+
+    if (loading) return (
+        <div className="flex h-full items-center justify-center">
+            <Spinner size="lg" />
+        </div>
+    )
+
+    if (error) return <div className="p-6 text-destructive">Error: {error}</div>
 
     return (
         <DataPage
@@ -31,5 +42,5 @@ export function Logs() {
                 />
             )}
         />
-    );
+    )
 }

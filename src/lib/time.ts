@@ -1,11 +1,17 @@
-import { format } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+import { format, toZonedTime } from 'date-fns-tz'
 
+/**
+ * Formats a UTC date string to IST (Indian Standard Time) as "yyyy-MM-dd HH:mm"
+ */
 export function formatIST(utcDate: string): string {
     if (!utcDate) return 'N/A'
-    return format(toZonedTime(new Date(utcDate), 'Asia/Kolkata'), 'yyyy-MM-dd HH:mm')
+    return format(new Date(utcDate), 'yyyy-MM-dd HH:mm', { timeZone: 'Asia/Kolkata' })
 }
 
+/**
+ * Returns the current local date/time in the format "YYYY-MM-DDTHH:MM"
+ * Used for pre‑filling datetime‑local inputs.
+ */
 export function getLocalDateTimeInput(): string {
     const now = new Date()
     const year = now.getFullYear()
@@ -18,7 +24,7 @@ export function getLocalDateTimeInput(): string {
 
 /**
  * Calculates and formats the duration between two ISO datetime strings.
- * Returns a string like "3h 30m" or "45m" or "—" if invalid.
+ * Returns a string like "3h 30m", "45m", "<1m", or "—" if invalid.
  */
 export function formatDuration(start: string | undefined, end: string | undefined): string {
     if (!start || !end) return '—'
@@ -34,4 +40,18 @@ export function formatDuration(start: string | undefined, end: string | undefine
     if (hours === 0) return `${minutes}m`
     if (minutes === 0) return `${hours}h`
     return `${hours}h ${minutes}m`
+}
+
+/**
+ * Extracts the year, month (0‑based), and day from an ISO string, converted to IST.
+ * Used for date filtering in the DataPage component.
+ */
+export function getISODatePartsInIST(isoString: string): { year: number; month: number; day: number } {
+    const date = new Date(isoString)
+    const istDate = toZonedTime(date, 'Asia/Kolkata')
+    return {
+        year: istDate.getFullYear(),
+        month: istDate.getMonth(),
+        day: istDate.getDate(),
+    }
 }
