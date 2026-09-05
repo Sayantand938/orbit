@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { getSingularName, notifySuccess } from "@/lib/utils"; // 👈 import both
 
 type Resource = { id: string | number;[key: string]: any };
 
@@ -31,6 +33,7 @@ export function createResourceHooks<T extends Resource>(
     const useAdd = () => {
         const { user } = useAuth();
         const queryClient = useQueryClient();
+        const singular = getSingularName(tableName);
         return useMutation({
             mutationFn: async (newItem: Omit<T, "id">) => {
                 if (!user) throw new Error("Not authenticated");
@@ -44,6 +47,10 @@ export function createResourceHooks<T extends Resource>(
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: [queryKey, user?.id] });
+                notifySuccess('created', singular);
+            },
+            onError: (error: Error) => {
+                toast.error(`Failed to create ${singular}: ${error.message}`);
             },
         });
     };
@@ -51,14 +58,9 @@ export function createResourceHooks<T extends Resource>(
     const useUpdate = () => {
         const { user } = useAuth();
         const queryClient = useQueryClient();
+        const singular = getSingularName(tableName);
         return useMutation({
-            mutationFn: async ({
-                id,
-                updates,
-            }: {
-                id: string | number;
-                updates: Omit<T, "id">;
-            }) => {
+            mutationFn: async ({ id, updates }: { id: string | number; updates: Omit<T, "id"> }) => {
                 if (!user) throw new Error("Not authenticated");
                 const idStr = String(id);
                 const { data, error } = await supabase
@@ -72,6 +74,10 @@ export function createResourceHooks<T extends Resource>(
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: [queryKey, user?.id] });
+                notifySuccess('updated', singular);
+            },
+            onError: (error: Error) => {
+                toast.error(`Failed to update ${singular}: ${error.message}`);
             },
         });
     };
@@ -79,6 +85,7 @@ export function createResourceHooks<T extends Resource>(
     const useDelete = () => {
         const { user } = useAuth();
         const queryClient = useQueryClient();
+        const singular = getSingularName(tableName);
         return useMutation({
             mutationFn: async (id: string | number) => {
                 if (!user) throw new Error("Not authenticated");
@@ -89,6 +96,10 @@ export function createResourceHooks<T extends Resource>(
             },
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: [queryKey, user?.id] });
+                notifySuccess('deleted', singular);
+            },
+            onError: (error: Error) => {
+                toast.error(`Failed to delete ${singular}: ${error.message}`);
             },
         });
     };

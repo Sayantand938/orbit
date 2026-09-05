@@ -17,6 +17,8 @@ export interface PageConfig<T> {
     singularTitle?: string;
     dateFilterKey: keyof T;
     searchPlaceholder: string;
+    searchFieldKey?: keyof T;
+    categoryFieldKey?: keyof T;
     formFields: readonly FormFieldConfig[];
     columns: readonly {
         header: string;
@@ -58,9 +60,9 @@ export function commonFields(
 
 // Options for creating a transform function
 type TransformOptions<T> = {
-    fieldMap: Record<keyof Omit<T, 'id'>, string>; // property -> form field name
-    dateField?: keyof Omit<T, 'id'>;               // if empty, set to now
-    numberFields?: (keyof Omit<T, 'id'>)[];        // properties to parse as float
+    fieldMap: Record<keyof Omit<T, 'id'>, string>;
+    dateField?: keyof Omit<T, 'id'>;
+    numberFields?: (keyof Omit<T, 'id'>)[];
 };
 
 export function createTransform<T extends { id: string | number }>(
@@ -72,14 +74,11 @@ export function createTransform<T extends { id: string | number }>(
         for (const [prop, fieldName] of Object.entries(fieldMap)) {
             const value = formData.get(fieldName as string);
             if (numberFields.includes(prop as keyof Omit<T, 'id'>)) {
-                // Only parse if the value is a string; otherwise keep undefined
                 result[prop] = typeof value === 'string' ? parseFloat(value) : undefined;
             } else {
-                // For non-number fields, convert null to empty string
                 result[prop] = value ?? '';
             }
         }
-        // Set default date if the date field is missing
         if (dateField) {
             const dateKey = dateField as string;
             if (!result[dateKey]) {

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Clipboard, Check, Search, Filter as FilterIcon, ChevronDown, ChevronRight, X } from 'lucide-react'
+import { Clipboard, Check, Search, Filter as FilterIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -35,6 +35,8 @@ interface DataPageProps<T> {
     onDelete: (id: string | number) => void
     dateFieldKey: keyof T
     categoryFieldKey?: keyof T
+    searchFieldKey?: keyof T
+    searchPlaceholder?: string // 👈 new
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -48,24 +50,20 @@ export function DataPage<T extends { id: string | number }>({
     onDelete,
     dateFieldKey,
     categoryFieldKey = 'category' as keyof T,
+    searchFieldKey = 'description' as keyof T,
+    searchPlaceholder = 'Search by description...', // 👈 default
 }: DataPageProps<T>) {
-    // Filter states
     const [searchTerm, setSearchTerm] = useState('')
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
     const [startDate, setStartDate] = useState<Date | null>(null)
     const [endDate, setEndDate] = useState<Date | null>(null)
-
-    // UI state for collapsible
     const [filtersOpen, setFiltersOpen] = useState(false)
-
-    // Dialog states
     const [open, setOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<T | null>(null)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [itemToDelete, setItemToDelete] = useState<T | null>(null)
     const [copied, setCopied] = useState(false)
 
-    // Extract unique categories
     const categoryOptions = useMemo(() => {
         const cats = new Set<string>()
         data.forEach((item) => {
@@ -77,7 +75,6 @@ export function DataPage<T extends { id: string | number }>({
         return Array.from(cats).sort()
     }, [data, categoryFieldKey])
 
-    // Count active filters
     const activeFilterCount = useMemo(() => {
         let count = 0
         if (searchTerm.trim() !== '') count++
@@ -87,31 +84,23 @@ export function DataPage<T extends { id: string | number }>({
         return count
     }, [searchTerm, categoryFilter, startDate, endDate])
 
-    // Filter data
     const filteredData = data.filter((item) => {
-        // Search filter (by description)
         if (searchTerm.trim() !== '') {
-            const desc = (item as any).description
-            if (typeof desc !== 'string') return false
-            if (!desc.toLowerCase().includes(searchTerm.toLowerCase())) return false
+            const field = item[searchFieldKey]
+            if (typeof field !== 'string') return false
+            if (!field.toLowerCase().includes(searchTerm.toLowerCase())) return false
         }
-
-        // Category filter
         if (categoryFilter && item[categoryFieldKey] !== categoryFilter) {
             return false
         }
-
-        // Date range filter
         const dateField = item[dateFieldKey]
         if (!dateField) return false
-
         let itemDate: Date
         try {
             itemDate = parseISO(dateField as string)
         } catch {
             return false
         }
-
         if (startDate && !endDate) {
             if (itemDate < startOfDay(startDate)) return false
         } else if (!startDate && endDate) {
@@ -121,7 +110,6 @@ export function DataPage<T extends { id: string | number }>({
                 return false
             }
         }
-
         return true
     })
 
@@ -130,7 +118,6 @@ export function DataPage<T extends { id: string | number }>({
         ...columns,
     ] as const
 
-    // Handlers
     const handleEdit = (item: T) => {
         setEditingItem(item)
         setOpen(true)
@@ -192,16 +179,14 @@ export function DataPage<T extends { id: string | number }>({
 
     return (
         <div className="p-6 space-y-6 h-full flex flex-col">
-            {/* Title row */}
             <h1 className="text-2xl font-bold">{title}</h1>
 
-            {/* Search + Copy + Filters toggle + Clear row */}
             <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="relative flex-1 min-w-[200px]">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search by description..."
+                            placeholder={searchPlaceholder} // 👈 dynamic
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-8 h-9 w-full"
@@ -279,7 +264,6 @@ export function DataPage<T extends { id: string | number }>({
                 </CollapsibleContent>
             </Collapsible>
 
-            {/* Table */}
             <div className="flex-1 min-h-0">
                 <DataTable
                     data={filteredData}
@@ -291,7 +275,6 @@ export function DataPage<T extends { id: string | number }>({
 
             <DataActionButton onClick={handleAddClick} />
 
-            {/* Dialogs */}
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
