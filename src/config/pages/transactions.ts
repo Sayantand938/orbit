@@ -71,7 +71,7 @@ export const transactionsConfig = {
         },
     ] as const,
     columns: [
-        { header: 'ID', accessor: 'id' as keyof Transaction },
+        // ID column removed – SL is added automatically
         { header: 'Description', accessor: 'description' as keyof Transaction },
         { header: 'Amount (₹)', accessor: 'amount' as keyof Transaction },
         { header: 'Category', accessor: 'category' as keyof Transaction },

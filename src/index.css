@@ -132,3 +132,37 @@
     @apply font-sans;
   }
 }
+
+
+/* Custom scrollbar styling */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Dark mode overrides (optional – works with CSS variables) */
+.dark .scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--muted);
+}
+
+.dark .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}

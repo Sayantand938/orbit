@@ -1,7 +1,8 @@
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,              // 👈 added
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
@@ -11,7 +12,8 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Rotate3D, Wallet, FileText, Clock, Settings } from "lucide-react"
+import { Rotate3D, Wallet, FileText, Clock, Settings, LogOut } from "lucide-react"  // 👈 added LogOut
+import { useAuth } from "@/contexts/AuthContext"   // 👈 added
 
 const menuItems = [
     { title: "Transactions", icon: Wallet, url: "/transactions" },
@@ -21,6 +23,18 @@ const menuItems = [
 ]
 
 export function AppSidebar() {
+    const { signOut } = useAuth()
+    const navigate = useNavigate()
+
+    const handleSignOut = async () => {
+        try {
+            await signOut()
+            navigate("/login")
+        } catch (error) {
+            console.error("Failed to sign out", error)
+        }
+    }
+
     return (
         <Sidebar
             className="bg-sidebar border-r border-sidebar-border"
@@ -28,12 +42,10 @@ export function AppSidebar() {
         >
             <SidebarHeader className="border-b border-sidebar-border p-4 group-data-[state=collapsed]:p-2">
                 <div className="flex items-center justify-between group-data-[state=collapsed]:justify-center">
-                    {/* Brand container – hidden when collapsed */}
                     <div className="flex items-center gap-3 group-data-[state=collapsed]:hidden">
                         <Rotate3D className="size-6 text-primary" />
                         <span className="text-lg font-semibold tracking-tight">Orbit</span>
                     </div>
-                    {/* Collapse button – always visible, centered when collapsed */}
                     <SidebarTrigger className="text-muted-foreground hover:text-foreground group-data-[state=collapsed]:size-4" />
                 </div>
             </SidebarHeader>
@@ -62,6 +74,21 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+
+            {/* 👇 New sign-out section */}
+            <SidebarFooter className="border-t border-sidebar-border p-2">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            onClick={handleSignOut}
+                            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-destructive hover:text-destructive"
+                        >
+                            <LogOut className="size-4" />
+                            <span className="group-data-[state=collapsed]:hidden">Sign Out</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
         </Sidebar>
     )
 }

@@ -42,7 +42,7 @@ export const logsConfig = {
         },
     ] as const,
     columns: [
-        { header: 'ID', accessor: 'id' as keyof Log },
+        // ID removed
         { header: 'Description', accessor: 'description' as keyof Log },
         { header: 'Category', accessor: 'category' as keyof Log },
         { header: 'Tags', accessor: 'tags' as keyof Log },

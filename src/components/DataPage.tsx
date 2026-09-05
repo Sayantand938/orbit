@@ -35,7 +35,7 @@ interface DataPageProps<T> {
     data: T[]
     columns: readonly {
         header: string
-        accessor: keyof T | ((item: T) => React.ReactNode)
+        accessor: keyof T | ((item: T, index: number) => React.ReactNode)
     }[]
     renderForm: (
         onSubmit: (newItem: Omit<T, 'id'>) => void,
@@ -76,7 +76,6 @@ export function DataPage<T extends { id: string | number }>({
             const dateField = item[dateFilterKey]
             if (dateField) {
                 const itemDate = new Date(dateField as string)
-                // ✅ guard against invalid date
                 if (isNaN(itemDate.getTime())) return false
                 const isSameDay =
                     itemDate.getFullYear() === selectedDate.getFullYear() &&
@@ -117,8 +116,14 @@ export function DataPage<T extends { id: string | number }>({
         setEditingItem(null)
     }
 
+    // Prepend serial number column
+    const displayColumns = [
+        { header: 'SL', accessor: (_item: T, index: number) => index + 1 },
+        ...columns,
+    ] as const
+
     return (
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 h-full flex flex-col">
             <h1 className="text-2xl font-bold">{title}</h1>
 
             <div className="flex items-center gap-2">
@@ -155,34 +160,37 @@ export function DataPage<T extends { id: string | number }>({
                 )}
             </div>
 
-            <div className="border rounded-md">
-                <Table>
-                    <TableHeader>
+            {/* Scrollable table container */}
+            <div className="border rounded-md flex-1 overflow-auto scrollbar-custom">
+                <Table className="w-full">
+                    <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
-                            {columns.map((col, idx) => (
-                                <TableHead key={idx}>{col.header}</TableHead>
+                            {displayColumns.map((col, idx) => (
+                                <TableHead key={idx} className="whitespace-nowrap">
+                                    {col.header}
+                                </TableHead>
                             ))}
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length + 1} className="text-center text-muted-foreground">
+                                <TableCell colSpan={displayColumns.length + 1} className="text-center text-muted-foreground">
                                     No items found for this date.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredData.map((item) => (
+                            filteredData.map((item, rowIndex) => (
                                 <TableRow key={item.id}>
-                                    {columns.map((col, idx) => (
-                                        <TableCell key={idx}>
+                                    {displayColumns.map((col, colIndex) => (
+                                        <TableCell key={colIndex} className="whitespace-nowrap">
                                             {typeof col.accessor === 'function'
-                                                ? col.accessor(item)
+                                                ? col.accessor(item, rowIndex)
                                                 : (item[col.accessor] as React.ReactNode)}
                                         </TableCell>
                                     ))}
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right whitespace-nowrap">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger
                                                 render={
@@ -237,7 +245,6 @@ export function DataPage<T extends { id: string | number }>({
                         handleFormSubmit,
                         closeDialog,
                         editingItem ? (() => {
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             const { id, ...rest } = editingItem
                             return rest
                         })() : undefined

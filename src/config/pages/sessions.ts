@@ -47,12 +47,11 @@ export const sessionsConfig = {
             name: 'endTime',
             label: 'End Time',
             type: 'datetime-local',
-            hint: 'Leave empty if not yet ended.',   // 👈 updated hint
-            // no autoFill – remains empty by default
+            hint: 'Leave empty if not yet ended.',
         },
     ] as const,
     columns: [
-        { header: 'ID', accessor: 'id' as keyof Session },
+        // ID removed
         { header: 'Description', accessor: 'description' as keyof Session },
         { header: 'Category', accessor: 'category' as keyof Session },
         { header: 'Tags', accessor: 'tags' as keyof Session },
@@ -66,7 +65,7 @@ export const sessionsConfig = {
         {
             header: 'End Time',
             accessor: (item: Session) => {
-                if (!item.endTime) return 'N/A'   // empty string → N/A
+                if (!item.endTime) return 'N/A'
                 return formatIST(item.endTime)
             },
         },
@@ -83,7 +82,6 @@ export const sessionsConfig = {
             startTime = new Date().toISOString()
         }
 
-        // 👇 No auto‑fill: if endTime is empty, set to empty string
         if (!endTime) {
             endTime = ''
         }

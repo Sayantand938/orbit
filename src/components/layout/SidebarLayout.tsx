@@ -5,7 +5,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarInset className="pt-4 px-4">
+            <SidebarInset className="pt-4 px-4 overflow-hidden h-screen">
                 {children}
             </SidebarInset>
         </SidebarProvider>
