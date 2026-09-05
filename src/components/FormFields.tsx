@@ -1,41 +1,67 @@
-import { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { type FormFieldConfig } from '@/config/pages'
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { type FormFieldConfig } from '@/config/pages';
+
+interface DateTimeValues {
+    date: string; // YYYY-MM-DD
+    time: string; // HH:MM (24-hour)
+}
+
+function buildISO(date: string, time: string): string {
+    if (!date || !time) return '';
+    // Ensure date and time are in the expected format
+    // We'll just concatenate and add seconds and timezone
+    return `${date}T${time}:00.000Z`;
+}
+
+function getCurrentDateTime(): DateTimeValues {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const year = now.getFullYear();
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hours = pad(now.getHours());
+    const minutes = pad(now.getMinutes());
+    return {
+        date: `${year}-${month}-${day}`,
+        time: `${hours}:${minutes}`,
+    };
+}
 
 export function FormFields({
     fields,
+    errors = {},
 }: {
-    fields: readonly FormFieldConfig[]
+    fields: readonly FormFieldConfig[];
+    errors?: Record<string, string>;
 }) {
-    // Store datetime components for each datetime field
-    const [datetimeValues, setDatetimeValues] = useState<Record<string, { date: string; time: string }>>(() => {
-        const initial: Record<string, { date: string; time: string }> = {}
+    // State for datetime values per field
+    const [datetimeValues, setDatetimeValues] = useState<Record<string, DateTimeValues>>(() => {
+        const initial: Record<string, DateTimeValues> = {};
         for (const field of fields) {
             if (field.type === 'datetime-local') {
-                const now = field.autoFill ? new Date() : undefined
-                initial[field.name] = {
-                    date: now ? now.toISOString().split('T')[0] : '',
-                    time: now ? now.toTimeString().slice(0, 5) : '',
-                }
+                initial[field.name] = field.autoFill ? getCurrentDateTime() : { date: '', time: '' };
             }
         }
-        return initial
-    })
+        return initial;
+    });
 
-    // Build ISO string from date and time
-    const buildISO = (dateStr: string, timeStr: string): string => {
-        if (!dateStr || !timeStr) return ''
-        return `${dateStr}T${timeStr}:00.000Z`
-    }
+    const updateDateTime = (fieldName: string, part: 'date' | 'time', value: string) => {
+        setDatetimeValues((prev) => ({
+            ...prev,
+            [fieldName]: {
+                ...prev[fieldName],
+                [part]: value,
+            },
+        }));
+    };
 
     return (
         <>
             {fields.map((field) => {
-                let defaultValue = field.defaultValue
-                if (field.autoFill && field.type === 'datetime-local') {
-                    defaultValue = new Date().toISOString()
-                }
+                const error = errors[field.name];
+                let defaultValue = field.defaultValue;
 
                 return (
                     <div key={field.name} className="space-y-1.5">
@@ -59,40 +85,32 @@ export function FormFields({
                                 ))}
                             </select>
                         ) : field.type === 'datetime-local' ? (
-                            <div className="flex items-center gap-2">
-                                <Input
-                                    type="date"
-                                    value={datetimeValues[field.name]?.date || ''}
-                                    onChange={(e) => {
-                                        const newDate = e.target.value
-                                        setDatetimeValues((prev) => ({
-                                            ...prev,
-                                            [field.name]: {
-                                                ...prev[field.name],
-                                                date: newDate,
-                                            },
-                                        }))
-                                    }}
-                                    className="flex-1"
-                                    required={field.required}
-                                />
-                                <Input
-                                    type="time"
-                                    value={datetimeValues[field.name]?.time || ''}
-                                    onChange={(e) => {
-                                        const newTime = e.target.value
-                                        setDatetimeValues((prev) => ({
-                                            ...prev,
-                                            [field.name]: {
-                                                ...prev[field.name],
-                                                time: newTime,
-                                            },
-                                        }))
-                                    }}
-                                    className="w-28"
-                                    required={field.required}
-                                />
-                                {/* Hidden input to store the combined ISO string */}
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-1 flex-1 min-w-[140px]">
+                                    <Label htmlFor={`${field.name}-date`} className="sr-only">Date</Label>
+                                    <Input
+                                        id={`${field.name}-date`}
+                                        type="text"
+                                        placeholder="YYYY-MM-DD"
+                                        value={datetimeValues[field.name]?.date || ''}
+                                        onChange={(e) => updateDateTime(field.name, 'date', e.target.value)}
+                                        className="flex-1"
+                                        required={field.required}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-1 flex-1 min-w-[100px]">
+                                    <Label htmlFor={`${field.name}-time`} className="sr-only">Time</Label>
+                                    <Input
+                                        id={`${field.name}-time`}
+                                        type="text"
+                                        placeholder="HH:MM"
+                                        value={datetimeValues[field.name]?.time || ''}
+                                        onChange={(e) => updateDateTime(field.name, 'time', e.target.value)}
+                                        className="flex-1"
+                                        required={field.required}
+                                    />
+                                </div>
+                                {/* Hidden input for combined ISO string */}
                                 <input
                                     type="hidden"
                                     name={field.name}
@@ -114,9 +132,10 @@ export function FormFields({
                         )}
 
                         {field.hint && <p className="mt-1 text-xs text-muted-foreground">{field.hint}</p>}
+                        {error && <p className="text-sm text-destructive">{error}</p>}
                     </div>
-                )
+                );
             })}
         </>
-    )
+    );
 }

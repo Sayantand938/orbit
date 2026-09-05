@@ -1,12 +1,13 @@
-import { DataPage } from '@/components/DataPage'
-import { DataPageForm } from '@/components/DataPageForm'
-import { pageConfigs } from '@/config/pages'
-import { useLogStore } from '@/stores/useLogStore'
+import { DataPage } from '@/components/DataPage';
+import { DataPageForm } from '@/components/DataPageForm';
+import { pageConfigs } from '@/config/pages';
+import { useLogStore } from '@/stores/useLogStore';
+import { logFormSchema } from '@/lib/validation';
 
 export function Logs() {
-    const items = useLogStore((state) => state.items)
-    const addItem = useLogStore((state) => state.addItem)
-    const config = pageConfigs.logs
+    const items = useLogStore((state) => state.items);
+    const addItem = useLogStore((state) => state.addItem);
+    const config = pageConfigs.logs;
 
     return (
         <DataPage
@@ -19,10 +20,11 @@ export function Logs() {
             renderForm={(onSubmit, close) => (
                 <DataPageForm
                     config={config}
+                    schema={logFormSchema}
                     onSubmit={onSubmit}
                     onCancel={close}
                 />
             )}
         />
-    )
+    );
 }

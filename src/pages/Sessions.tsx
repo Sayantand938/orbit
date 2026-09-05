@@ -1,12 +1,13 @@
-import { DataPage } from '@/components/DataPage'
-import { DataPageForm } from '@/components/DataPageForm'
-import { pageConfigs } from '@/config/pages'
-import { useSessionStore } from '@/stores/useSessionStore'
+import { DataPage } from '@/components/DataPage';
+import { DataPageForm } from '@/components/DataPageForm';
+import { pageConfigs } from '@/config/pages';
+import { useSessionStore } from '@/stores/useSessionStore';
+import { sessionFormSchema } from '@/lib/validation';
 
 export function Sessions() {
-    const items = useSessionStore((state) => state.items)
-    const addItem = useSessionStore((state) => state.addItem)
-    const config = pageConfigs.sessions
+    const items = useSessionStore((state) => state.items);
+    const addItem = useSessionStore((state) => state.addItem);
+    const config = pageConfigs.sessions;
 
     return (
         <DataPage
@@ -19,10 +20,11 @@ export function Sessions() {
             renderForm={(onSubmit, close) => (
                 <DataPageForm
                     config={config}
+                    schema={sessionFormSchema}
                     onSubmit={onSubmit}
                     onCancel={close}
                 />
             )}
         />
-    )
+    );
 }
