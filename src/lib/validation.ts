@@ -1,53 +1,67 @@
-import { z } from 'zod'
+import { z } from 'zod';
+import type { FormFieldConfig } from '@/config/pages';
 
-// Treat empty strings as undefined for optional datetime fields
-const optionalDatetime = z.preprocess(
-    (val) => (val === '' ? undefined : val),
-    z.string().datetime({ offset: true }).optional()
-)
+export function createSchemaFromFields(fields: readonly FormFieldConfig[]) {
+    const shape: Record<string, z.ZodTypeAny> = {};
 
-export const transactionFormSchema = z.object({
-    description: z.string().min(1, 'Description is required'),
-    amount: z.coerce.number().positive('Amount must be positive'),
-    category: z.string().min(1, 'Category is required'),
-    location: z.string().optional(),
-    tags: z.string().optional(),
-    event_time: optionalDatetime,
-})
+    for (const field of fields) {
+        let zodType: z.ZodTypeAny;
 
-export const logFormSchema = z.object({
-    description: z.string().min(1, 'Description is required'),
-    category: z.string().min(1, 'Category is required'),
-    tags: z.string().optional(),
-    place: z.string().optional(),
-    event_time: optionalDatetime,
-})
-
-export const sessionFormSchema = z.object({
-    description: z.string().min(1, 'Description is required'),
-    category: z.string().min(1, 'Category is required'),
-    tags: z.string().optional(),
-    startTime: optionalDatetime,
-    endTime: optionalDatetime,   // ✅ optional – allows empty or missing
-}).refine(
-    (data) => {
-        // Only validate end > start if both are provided
-        if (data.startTime && data.endTime) {
-            return new Date(data.endTime) > new Date(data.startTime)
+        if (field.type === 'datetime-local') {
+            if (field.required) {
+                zodType = z.preprocess(
+                    (val) => (val === '' ? undefined : val),
+                    z.string().datetime({ offset: true })
+                );
+            } else {
+                zodType = z.preprocess(
+                    (val) => (val === '' ? undefined : val),
+                    z.string().datetime({ offset: true }).optional()
+                );
+            }
+        } else if (field.type === 'number') {
+            if (field.required) {
+                zodType = z.coerce.number().positive(`${field.label} must be positive`);
+            } else {
+                zodType = z.coerce.number().optional();
+            }
+        } else {
+            // text or select
+            if (field.required) {
+                zodType = z.string().min(1, `${field.label} is required`);
+            } else {
+                zodType = z.string().optional();
+            }
         }
-        return true
+
+        shape[field.name] = zodType;
+    }
+
+    return z.object(shape);
+}
+
+// Pre-built schemas using the configs
+import { transactionsConfig, logsConfig, sessionsConfig } from '@/config/pages';
+
+export const transactionFormSchema = createSchemaFromFields(transactionsConfig.formFields);
+export const logFormSchema = createSchemaFromFields(logsConfig.formFields);
+export const sessionFormSchema = createSchemaFromFields(sessionsConfig.formFields).refine(
+    (data) => {
+        // Only validate if both start and end are provided
+        if (data.startTime && data.endTime) {
+            const start = new Date(data.startTime as string);
+            const end = new Date(data.endTime as string);
+            return end > start;
+        }
+        return true;
     },
     {
         message: 'End time must be after start time',
         path: ['endTime'],
     }
-)
+);
 
-/**
- * Validates FormData against a Zod schema.
- * @throws ZodError if validation fails
- */
 export function validateFormData(formData: FormData, schema: z.ZodSchema): void {
-    const raw = Object.fromEntries(formData.entries())
-    schema.parse(raw)
+    const raw = Object.fromEntries(formData.entries());
+    schema.parse(raw);
 }

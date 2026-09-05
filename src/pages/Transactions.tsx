@@ -1,44 +1,18 @@
-import { DataPage } from '@/components/DataPage'
-import { DataPageForm } from '@/components/DataPageForm'
-import { pageConfigs } from '@/config/pages'
-import { useTransactions, useAddTransaction, useUpdateTransaction, useDeleteTransaction } from '@/hooks/useTransactions'
-import { transactionFormSchema } from '@/lib/validation'
-import { Spinner } from '@/components/ui/spinner'
+import { createDataPage } from '@/components/createDataPage';
+import { pageConfigs } from '@/config/pages';
+import {
+    useTransactions,
+    useAddTransaction,
+    useUpdateTransaction,
+    useDeleteTransaction,
+} from '@/hooks/useTransactions';
+import { transactionFormSchema } from '@/lib/validation';
 
-export function Transactions() {
-    const config = pageConfigs.transactions
-
-    const { data: items = [], isLoading, error } = useTransactions()
-    const addMutation = useAddTransaction()
-    const updateMutation = useUpdateTransaction()
-    const deleteMutation = useDeleteTransaction()
-
-    if (isLoading) return (
-        <div className="flex h-full items-center justify-center">
-            <Spinner size="lg" />
-        </div>
-    )
-
-    if (error) return <div className="p-6 text-destructive">Error: {error.message}</div>
-
-    return (
-        <DataPage
-            title={config.title}
-            data={items}
-            columns={config.columns}
-            onAdd={(newItem) => addMutation.mutate(newItem)}
-            onUpdate={(id, updates) => updateMutation.mutate({ id, updates })}
-            onDelete={(id) => deleteMutation.mutate(id)}
-            dateFieldKey="event_time"
-            renderForm={(onSubmit, close, initialData) => (
-                <DataPageForm
-                    config={config}
-                    schema={transactionFormSchema}
-                    onSubmit={onSubmit}
-                    onCancel={close}
-                    initialData={initialData}
-                />
-            )}
-        />
-    )
-}
+export const Transactions = createDataPage({
+    config: pageConfigs.transactions,
+    schema: transactionFormSchema,
+    useList: useTransactions,
+    useAdd: useAddTransaction,
+    useUpdate: useUpdateTransaction,
+    useDelete: useDeleteTransaction,
+});
