@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { type FormFieldConfig } from '@/config/pages';
 
@@ -9,13 +10,12 @@ interface DateTimeValues {
 }
 
 function buildISO(date: string, time: string): string {
-    if (!date || !time) return ''
-    const [year, month, day] = date.split('-').map(Number)
-    const [hours, minutes] = time.split(':').map(Number)
-    // Month is 0-indexed in JavaScript Date
-    const localDate = new Date(year, month - 1, day, hours, minutes)
-    if (isNaN(localDate.getTime())) return ''
-    return localDate.toISOString()
+    if (!date || !time) return '';
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    const localDate = new Date(year, month - 1, day, hours, minutes);
+    if (isNaN(localDate.getTime())) return '';
+    return localDate.toISOString();
 }
 
 function getCurrentDateTime(): DateTimeValues {
@@ -138,6 +138,14 @@ export function FormFields({
         }));
     };
 
+    const setCurrentTime = (fieldName: string) => {
+        const { date, time } = getCurrentDateTime();
+        setDatetimeValues((prev) => ({
+            ...prev,
+            [fieldName]: { date, time },
+        }));
+    };
+
     return (
         <>
             {fields.map((field) => {
@@ -185,6 +193,8 @@ export function FormFields({
                     );
                 }
 
+                const isEndTime = field.name === 'endTime';
+
                 return (
                     <div key={field.name} className="space-y-1.5">
                         <Label htmlFor={field.name}>
@@ -216,6 +226,17 @@ export function FormFields({
                                     required={field.required}
                                 />
                             </div>
+                            {isEndTime && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentTime(field.name)}
+                                    className="shrink-0"
+                                >
+                                    Now
+                                </Button>
+                            )}
                             <input
                                 type="hidden"
                                 name={field.name}
