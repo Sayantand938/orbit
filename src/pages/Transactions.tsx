@@ -7,6 +7,8 @@ import { transactionFormSchema } from '@/lib/validation';
 export function Transactions() {
     const items = useTransactionStore((state) => state.items);
     const addItem = useTransactionStore((state) => state.addItem);
+    const updateItem = useTransactionStore((state) => state.updateItem);
+    const deleteItem = useTransactionStore((state) => state.deleteItem);
     const config = pageConfigs.transactions;
 
     return (
@@ -15,14 +17,17 @@ export function Transactions() {
             data={items}
             columns={config.columns}
             onAdd={addItem}
+            onUpdate={updateItem}
+            onDelete={deleteItem}
             dateFilterKey={config.dateFilterKey}
             searchPlaceholder={config.searchPlaceholder}
-            renderForm={(onSubmit, close) => (
+            renderForm={(onSubmit, close, initialData) => (
                 <DataPageForm
                     config={config}
                     schema={transactionFormSchema}
                     onSubmit={onSubmit}
                     onCancel={close}
+                    initialData={initialData}
                 />
             )}
         />

@@ -7,9 +7,10 @@ import { validateFormData } from '@/lib/validation';
 
 interface DataPageFormProps<T> {
     config: PageConfig<T>;
-    schema: z.ZodSchema; // any Zod schema – used only for validation
+    schema: z.ZodSchema;
     onSubmit: (data: Omit<T, 'id'>) => void;
     onCancel: () => void;
+    initialData?: Omit<T, 'id'>;   // <-- new
 }
 
 export function DataPageForm<T>({
@@ -17,6 +18,7 @@ export function DataPageForm<T>({
     schema,
     onSubmit,
     onCancel,
+    initialData,
 }: DataPageFormProps<T>) {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -41,14 +43,13 @@ export function DataPageForm<T>({
             return;
         }
 
-        // Transform and submit – the transform function handles defaults
         const data = config.transform(formData);
         onSubmit(data);
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <FormFields fields={config.formFields} errors={errors} />
+            <FormFields fields={config.formFields} errors={errors} initialValues={initialData as Record<string, string> | undefined} />
             <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onCancel}>
                     Cancel

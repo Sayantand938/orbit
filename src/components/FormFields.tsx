@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { type FormFieldConfig } from '@/config/pages';
@@ -10,8 +10,6 @@ interface DateTimeValues {
 
 function buildISO(date: string, time: string): string {
     if (!date || !time) return '';
-    // Ensure date and time are in the expected format
-    // We'll just concatenate and add seconds and timezone
     return `${date}T${time}:00.000Z`;
 }
 
@@ -29,23 +27,77 @@ function getCurrentDateTime(): DateTimeValues {
     };
 }
 
+function parseISODateTime(isoString?: string): DateTimeValues | null {
+    if (!isoString) return null;
+    try {
+        const date = new Date(isoString);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        return {
+            date: `${year}-${month}-${day}`,
+            time: `${hours}:${minutes}`,
+        };
+    } catch {
+        return null;
+    }
+}
+
 export function FormFields({
     fields,
     errors = {},
+    initialValues,
 }: {
     fields: readonly FormFieldConfig[];
     errors?: Record<string, string>;
+    initialValues?: Record<string, string>;
 }) {
     // State for datetime values per field
     const [datetimeValues, setDatetimeValues] = useState<Record<string, DateTimeValues>>(() => {
         const initial: Record<string, DateTimeValues> = {};
         for (const field of fields) {
             if (field.type === 'datetime-local') {
+                // Check if initialValues has this field
+                const initVal = initialValues?.[field.name];
+                if (initVal) {
+                    const parsed = parseISODateTime(initVal);
+                    if (parsed) {
+                        initial[field.name] = parsed;
+                        continue;
+                    }
+                }
                 initial[field.name] = field.autoFill ? getCurrentDateTime() : { date: '', time: '' };
             }
         }
         return initial;
     });
+
+    // If initialValues changes (e.g., when editing), update datetime state accordingly
+    useEffect(() => {
+        for (const field of fields) {
+            if (field.type === 'datetime-local') {
+                const initVal = initialValues?.[field.name];
+                if (initVal) {
+                    const parsed = parseISODateTime(initVal);
+                    if (parsed) {
+                        setDatetimeValues((prev) => ({
+                            ...prev,
+                            [field.name]: parsed,
+                        }));
+                    }
+                } else {
+                    // If no initial value, set to current if autoFill, else empty
+                    setDatetimeValues((prev) => ({
+                        ...prev,
+                        [field.name]: field.autoFill ? getCurrentDateTime() : { date: '', time: '' },
+                    }));
+                }
+            }
+        }
+    }, [initialValues, fields]);
 
     const updateDateTime = (fieldName: string, part: 'date' | 'time', value: string) => {
         setDatetimeValues((prev) => ({
@@ -62,6 +114,10 @@ export function FormFields({
             {fields.map((field) => {
                 const error = errors[field.name];
                 let defaultValue = field.defaultValue;
+                // Override with initialValues if present
+                if (initialValues && field.name in initialValues) {
+                    defaultValue = initialValues[field.name];
+                }
 
                 return (
                     <div key={field.name} className="space-y-1.5">

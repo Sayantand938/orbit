@@ -37,8 +37,14 @@ interface DataPageProps<T> {
         header: string
         accessor: keyof T | ((item: T) => React.ReactNode)
     }[]
-    renderForm: (onSubmit: (newItem: Omit<T, 'id'>) => void, closeDialog: () => void) => React.ReactNode
+    renderForm: (
+        onSubmit: (newItem: Omit<T, 'id'>) => void,
+        closeDialog: () => void,
+        initialData?: Omit<T, 'id'>  // <-- added for editing
+    ) => React.ReactNode
     onAdd: (newItem: Omit<T, 'id'>) => void
+    onUpdate: (id: string | number, updates: Omit<T, 'id'>) => void   // <-- new
+    onDelete: (id: string | number) => void                           // <-- new
     searchPlaceholder?: string
     dateFilterKey?: keyof T
 }
@@ -49,6 +55,8 @@ export function DataPage<T extends { id: string | number }>({
     columns,
     renderForm,
     onAdd,
+    onUpdate,
+    onDelete,
     searchPlaceholder = 'Search...',
     dateFilterKey,
 }: DataPageProps<T>) {
@@ -56,6 +64,7 @@ export function DataPage<T extends { id: string | number }>({
     const [open, setOpen] = useState(false)
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     const [datePickerOpen, setDatePickerOpen] = useState(false)
+    const [editingItem, setEditingItem] = useState<T | null>(null)
 
     const filteredData = data.filter((item) => {
         const searchMatch = JSON.stringify(item)
@@ -79,6 +88,32 @@ export function DataPage<T extends { id: string | number }>({
 
         return true
     })
+
+    const handleEdit = (item: T) => {
+        setEditingItem(item)
+        setOpen(true)
+    }
+
+    const handleDelete = (id: string | number) => {
+        if (window.confirm('Are you sure you want to delete this item?')) {
+            onDelete(id)
+        }
+    }
+
+    const handleFormSubmit = (data: Omit<T, 'id'>) => {
+        if (editingItem) {
+            onUpdate(editingItem.id, data)
+        } else {
+            onAdd(data)
+        }
+        setOpen(false)
+        setEditingItem(null)
+    }
+
+    const closeDialog = () => {
+        setOpen(false)
+        setEditingItem(null)
+    }
 
     return (
         <div className="p-6 space-y-4">
@@ -156,12 +191,12 @@ export function DataPage<T extends { id: string | number }>({
                                                 }
                                             />
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => console.log('Edit', item.id)}>
+                                                <DropdownMenuItem onClick={() => handleEdit(item)}>
                                                     <Pencil className="mr-2 size-4" />
                                                     Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
-                                                    onClick={() => console.log('Delete', item.id)}
+                                                    onClick={() => handleDelete(item.id)}
                                                     className="text-destructive"
                                                 >
                                                     <Trash2 className="mr-2 size-4" />
@@ -180,7 +215,10 @@ export function DataPage<T extends { id: string | number }>({
             <Button
                 className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50"
                 size="icon"
-                onClick={() => setOpen(true)}
+                onClick={() => {
+                    setEditingItem(null)
+                    setOpen(true)
+                }}
             >
                 <Plus className="size-6" />
                 <span className="sr-only">Quick Add</span>
@@ -189,14 +227,18 @@ export function DataPage<T extends { id: string | number }>({
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add New {title.slice(0, -1)}</DialogTitle>
+                        <DialogTitle>
+                            {editingItem ? `Edit ${title.slice(0, -1)}` : `Add New ${title.slice(0, -1)}`}
+                        </DialogTitle>
                     </DialogHeader>
                     {renderForm(
-                        (newItem) => {
-                            onAdd(newItem)
-                            setOpen(false)
-                        },
-                        () => setOpen(false)
+                        handleFormSubmit,
+                        closeDialog,
+                        editingItem ? (() => {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            const { id, ...rest } = editingItem
+                            return rest
+                        })() : undefined
                     )}
                 </DialogContent>
             </Dialog>
