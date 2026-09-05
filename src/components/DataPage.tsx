@@ -15,6 +15,8 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
+    DialogDescription,
 } from '@/components/ui/dialog'
 import {
     DropdownMenu,
@@ -67,6 +69,10 @@ export function DataPage<T extends { id: string | number }>({
     const [datePickerOpen, setDatePickerOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<T | null>(null)
 
+    // State for delete confirmation dialog
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [itemToDelete, setItemToDelete] = useState<T | null>(null)
+
     const filteredData = data.filter((item) => {
         const searchMatch = JSON.stringify(item)
             .toLowerCase()
@@ -97,9 +103,16 @@ export function DataPage<T extends { id: string | number }>({
         setOpen(true)
     }
 
-    const handleDelete = (id: string | number) => {
-        if (window.confirm('Are you sure you want to delete this item?')) {
-            onDelete(id)
+    const handleDeleteClick = (item: T) => {
+        setItemToDelete(item)
+        setDeleteDialogOpen(true)
+    }
+
+    const handleConfirmDelete = () => {
+        if (itemToDelete) {
+            onDelete(itemToDelete.id)
+            setItemToDelete(null)
+            setDeleteDialogOpen(false)
         }
     }
 
@@ -208,7 +221,7 @@ export function DataPage<T extends { id: string | number }>({
                                                     Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
-                                                    onClick={() => handleDelete(item.id)}
+                                                    onClick={() => handleDeleteClick(item)}
                                                     className="text-destructive"
                                                 >
                                                     <Trash2 className="mr-2 size-4" />
@@ -251,6 +264,26 @@ export function DataPage<T extends { id: string | number }>({
                             return rest
                         })() : undefined
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete this item? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleConfirmDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
