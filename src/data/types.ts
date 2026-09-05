@@ -20,6 +20,7 @@ export interface Log {
 export interface Session {
     id: string
     description: string
+    category: string   // ✅ now only one definition
     tags: string
     startTime: string   // ISO datetime
     endTime: string     // ISO datetime

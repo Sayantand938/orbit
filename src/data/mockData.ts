@@ -44,6 +44,7 @@ export const initialSessions: Session[] = [
     {
         id: '1',
         description: 'Development session',
+        category: 'Work',               // 👈 added
         tags: 'coding, react',
         startTime: '2026-09-04T09:00:00Z',
         endTime: '2026-09-04T12:30:00Z',
@@ -51,6 +52,7 @@ export const initialSessions: Session[] = [
     {
         id: '2',
         description: 'Design review',
+        category: 'Meeting',            // 👈 added
         tags: 'design, team',
         startTime: '2026-09-03T14:00:00Z',
         endTime: '2026-09-03T16:00:00Z',

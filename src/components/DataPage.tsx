@@ -40,11 +40,11 @@ interface DataPageProps<T> {
     renderForm: (
         onSubmit: (newItem: Omit<T, 'id'>) => void,
         closeDialog: () => void,
-        initialData?: Omit<T, 'id'>  // <-- added for editing
+        initialData?: Omit<T, 'id'>
     ) => React.ReactNode
     onAdd: (newItem: Omit<T, 'id'>) => void
-    onUpdate: (id: string | number, updates: Omit<T, 'id'>) => void   // <-- new
-    onDelete: (id: string | number) => void                           // <-- new
+    onUpdate: (id: string | number, updates: Omit<T, 'id'>) => void
+    onDelete: (id: string | number) => void
     searchPlaceholder?: string
     dateFilterKey?: keyof T
 }
@@ -76,6 +76,8 @@ export function DataPage<T extends { id: string | number }>({
             const dateField = item[dateFilterKey]
             if (dateField) {
                 const itemDate = new Date(dateField as string)
+                // ✅ guard against invalid date
+                if (isNaN(itemDate.getTime())) return false
                 const isSameDay =
                     itemDate.getFullYear() === selectedDate.getFullYear() &&
                     itemDate.getMonth() === selectedDate.getMonth() &&

@@ -60,7 +60,6 @@ export function FormFields({
         const initial: Record<string, DateTimeValues> = {};
         for (const field of fields) {
             if (field.type === 'datetime-local') {
-                // Check if initialValues has this field
                 const initVal = initialValues?.[field.name];
                 if (initVal) {
                     const parsed = parseISODateTime(initVal);
@@ -75,7 +74,8 @@ export function FormFields({
         return initial;
     });
 
-    // If initialValues changes (e.g., when editing), update datetime state accordingly
+    // If initialValues changes (e.g., when editing), update datetime state accordingly.
+    // We only depend on initialValues and the list of field names (stable).
     useEffect(() => {
         for (const field of fields) {
             if (field.type === 'datetime-local') {
@@ -89,7 +89,6 @@ export function FormFields({
                         }));
                     }
                 } else {
-                    // If no initial value, set to current if autoFill, else empty
                     setDatetimeValues((prev) => ({
                         ...prev,
                         [field.name]: field.autoFill ? getCurrentDateTime() : { date: '', time: '' },
@@ -97,7 +96,11 @@ export function FormFields({
                 }
             }
         }
-    }, [initialValues, fields]);
+        // ✅ we intentionally omit `fields` from dependencies because it's stable,
+        // and we only need to react to initialValues changes.
+        // If you prefer to keep it, it's safe, but this avoids unnecessary re-runs.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialValues]);
 
     const updateDateTime = (fieldName: string, part: 'date' | 'time', value: string) => {
         setDatetimeValues((prev) => ({
@@ -114,7 +117,6 @@ export function FormFields({
             {fields.map((field) => {
                 const error = errors[field.name];
                 let defaultValue = field.defaultValue;
-                // Override with initialValues if present
                 if (initialValues && field.name in initialValues) {
                     defaultValue = initialValues[field.name];
                 }
@@ -166,7 +168,6 @@ export function FormFields({
                                         required={field.required}
                                     />
                                 </div>
-                                {/* Hidden input for combined ISO string */}
                                 <input
                                     type="hidden"
                                     name={field.name}

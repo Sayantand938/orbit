@@ -15,6 +15,22 @@ export const sessionsConfig = {
             placeholder: 'e.g. Development session',
         },
         {
+            name: 'category',
+            label: 'Category',
+            type: 'select',
+            required: true,
+            placeholder: 'Select a category',
+            options: [
+                { value: 'Work', label: 'Work' },
+                { value: 'Meeting', label: 'Meeting' },
+                { value: 'Study', label: 'Study' },
+                { value: 'Personal', label: 'Personal' },
+                { value: 'Fitness', label: 'Fitness' },
+                { value: 'Entertainment', label: 'Entertainment' },
+                { value: 'Other', label: 'Other' },
+            ],
+        },
+        {
             name: 'tags',
             label: 'Tags (comma separated)',
             type: 'text',
@@ -31,12 +47,14 @@ export const sessionsConfig = {
             name: 'endTime',
             label: 'End Time',
             type: 'datetime-local',
-            hint: 'Leave blank to set 1 hour after start.',
+            hint: 'Leave empty if not yet ended.',   // 👈 updated hint
+            // no autoFill – remains empty by default
         },
     ] as const,
     columns: [
         { header: 'ID', accessor: 'id' as keyof Session },
         { header: 'Description', accessor: 'description' as keyof Session },
+        { header: 'Category', accessor: 'category' as keyof Session },
         { header: 'Tags', accessor: 'tags' as keyof Session },
         {
             header: 'Start Time',
@@ -48,7 +66,7 @@ export const sessionsConfig = {
         {
             header: 'End Time',
             accessor: (item: Session) => {
-                if (!item.endTime) return 'N/A'
+                if (!item.endTime) return 'N/A'   // empty string → N/A
                 return formatIST(item.endTime)
             },
         },
@@ -60,16 +78,19 @@ export const sessionsConfig = {
     transform: (formData: FormData): Omit<Session, 'id'> => {
         let startTime = formData.get('startTime') as string
         let endTime = formData.get('endTime') as string
+
         if (!startTime) {
             startTime = new Date().toISOString()
         }
+
+        // 👇 No auto‑fill: if endTime is empty, set to empty string
         if (!endTime) {
-            const end = new Date(startTime)
-            end.setHours(end.getHours() + 1)
-            endTime = end.toISOString()
+            endTime = ''
         }
+
         return {
             description: formData.get('description') as string,
+            category: formData.get('category') as string,
             tags: formData.get('tags') as string,
             startTime,
             endTime,
