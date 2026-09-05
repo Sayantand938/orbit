@@ -29,8 +29,7 @@ export function Logs() {
             onAdd={(newItem) => addMutation.mutate(newItem)}
             onUpdate={(id, updates) => updateMutation.mutate({ id, updates })}
             onDelete={(id) => deleteMutation.mutate(id)}
-            dateFilterKey={config.dateFilterKey}
-            searchPlaceholder={config.searchPlaceholder}
+            dateFieldKey="event_time"
             renderForm={(onSubmit, close, initialData) => (
                 <DataPageForm
                     config={config}

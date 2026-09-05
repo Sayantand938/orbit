@@ -13,9 +13,6 @@ export function Transactions() {
     const updateMutation = useUpdateTransaction()
     const deleteMutation = useDeleteTransaction()
 
-    // Auto-refetch when component mounts (or query handles it)
-    // No need for useEffect
-
     if (isLoading) return (
         <div className="flex h-full items-center justify-center">
             <Spinner size="lg" />
@@ -32,8 +29,7 @@ export function Transactions() {
             onAdd={(newItem) => addMutation.mutate(newItem)}
             onUpdate={(id, updates) => updateMutation.mutate({ id, updates })}
             onDelete={(id) => deleteMutation.mutate(id)}
-            dateFilterKey={config.dateFilterKey}
-            searchPlaceholder={config.searchPlaceholder}
+            dateFieldKey="event_time"
             renderForm={(onSubmit, close, initialData) => (
                 <DataPageForm
                     config={config}
