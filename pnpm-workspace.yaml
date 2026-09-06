@@ -1,2 +1,4 @@
+allowBuilds:
+  sharp: false
 minimumReleaseAgeExclude:
   - lucide-react@1.40.0
