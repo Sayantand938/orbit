@@ -21,7 +21,7 @@ export function createSchemaFromFields(fields: readonly FormFieldConfig[]) {
             }
         } else if (field.type === 'number') {
             if (field.required) {
-                zodType = z.coerce.number().positive(`${field.label} must be positive`);
+                zodType = z.coerce.number();
             } else {
                 zodType = z.coerce.number().optional();
             }
@@ -43,11 +43,19 @@ export function createSchemaFromFields(fields: readonly FormFieldConfig[]) {
 // Pre-built schemas using the configs
 import { transactionsConfig, logsConfig, sessionsConfig } from '@/config/pages';
 
-export const transactionFormSchema = createSchemaFromFields(transactionsConfig.formFields);
+export const transactionFormSchema = createSchemaFromFields(transactionsConfig.formFields)
+    .refine((data) => {
+        // Ensure amount is a positive number
+        const amount = data.amount;
+        return typeof amount === 'number' && amount > 0;
+    }, {
+        message: 'Amount must be a positive number',
+        path: ['amount'],
+    });
+
 export const logFormSchema = createSchemaFromFields(logsConfig.formFields);
 export const sessionFormSchema = createSchemaFromFields(sessionsConfig.formFields).refine(
     (data) => {
-        // Only validate if both start and end are provided
         if (data.startTime && data.endTime) {
             const start = new Date(data.startTime as string);
             const end = new Date(data.endTime as string);

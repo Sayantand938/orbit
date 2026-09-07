@@ -11,10 +11,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Rotate3D, Wallet, FileText, Clock, Settings, LogOut } from "lucide-react"
+import { Rotate3D, Wallet, FileText, Clock, Settings, LogOut, LayoutDashboard } from "lucide-react" // 👈 added LayoutDashboard
 import { useAuth } from "@/contexts/AuthContext"
 
 const menuItems = [
+    { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" }, // 👈 new
     { title: "Transactions", icon: Wallet, url: "/transactions" },
     { title: "Logs", icon: FileText, url: "/logs" },
     { title: "Sessions", icon: Clock, url: "/sessions" },
@@ -59,7 +60,7 @@ export function AppSidebar() {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton
                                         render={<NavLink to={item.url} />}
-                                        className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-base"  // 👈 added text-base
+                                        className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-base"
                                     >
                                         <item.icon className="size-4" />
                                         <span className="group-data-[state=collapsed]:hidden">
@@ -78,7 +79,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-destructive hover:text-destructive text-base"  // 👈 also text-base
+                            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-destructive hover:text-destructive text-base"
                         >
                             <LogOut className="size-4" />
                             <span className="group-data-[state=collapsed]:hidden">Sign Out</span>

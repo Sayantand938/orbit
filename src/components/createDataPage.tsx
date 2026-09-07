@@ -55,7 +55,7 @@ export function createDataPage<T extends { id: string | number }>({
                     dateFieldKey={config.dateFilterKey}
                     searchFieldKey={config.searchFieldKey}
                     searchPlaceholder={config.searchPlaceholder}
-                    categoryFieldKey={config.categoryFieldKey} // 👈 newly added
+                    categoryFieldKey={config.categoryFieldKey}
                     renderForm={(onSubmit, close, initialData) => (
                         <DataPageForm
                             config={config}

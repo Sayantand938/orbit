@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Clipboard, Check, Search, Filter as FilterIcon, X } from 'lucide-react'
+import { Clipboard, Check, Search, Filter as FilterIcon, X, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -8,7 +8,6 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Card, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { DataFilter } from './DataFilter'
@@ -36,7 +35,7 @@ interface DataPageProps<T> {
     dateFieldKey: keyof T
     categoryFieldKey?: keyof T
     searchFieldKey?: keyof T
-    searchPlaceholder?: string // 👈 new
+    searchPlaceholder?: string
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -51,7 +50,7 @@ export function DataPage<T extends { id: string | number }>({
     dateFieldKey,
     categoryFieldKey = 'category' as keyof T,
     searchFieldKey = 'description' as keyof T,
-    searchPlaceholder = 'Search by description...', // 👈 default
+    searchPlaceholder = 'Search...',
 }: DataPageProps<T>) {
     const [searchTerm, setSearchTerm] = useState('')
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
@@ -142,11 +141,10 @@ export function DataPage<T extends { id: string | number }>({
         } else {
             onAdd(data)
         }
-        setOpen(false)
-        setEditingItem(null)
+        closeForm()
     }
 
-    const closeDialog = () => {
+    const closeForm = () => {
         setOpen(false)
         setEditingItem(null)
     }
@@ -177,6 +175,43 @@ export function DataPage<T extends { id: string | number }>({
     const hasFilters = activeFilterCount > 0
     const dialogTitle = singularTitle || (title.endsWith('s') ? title.slice(0, -1) : title)
 
+    // Full‑page form overlay
+    if (open) {
+        const initialData = editingItem
+            ? (() => {
+                const { id, ...rest } = editingItem
+                return rest
+            })()
+            : undefined
+
+        return (
+            <div className="fixed inset-0 z-50 flex flex-col bg-background">
+                {/* Header */}
+                <div className="flex items-center gap-3 border-b p-4">
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={closeForm}
+                        aria-label="Go back"
+                    >
+                        <ArrowLeft className="size-5" />
+                    </Button>
+                    <h2 className="text-xl font-semibold">
+                        {editingItem ? `Edit ${dialogTitle}` : `Add New ${dialogTitle}`}
+                    </h2>
+                </div>
+
+                {/* Scrollable content with custom scrollbar */}
+                <div className="flex-1 overflow-auto scrollbar-custom p-6">
+                    <div className="max-w-2xl mx-auto">
+                        {renderForm(handleFormSubmit, closeForm, initialData)}
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Main view
     return (
         <div className="p-6 space-y-6 h-full flex flex-col">
             <h1 className="text-2xl font-bold">{title}</h1>
@@ -186,7 +221,7 @@ export function DataPage<T extends { id: string | number }>({
                     <div className="relative flex-1 min-w-[200px]">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                         <Input
-                            placeholder={searchPlaceholder} // 👈 dynamic
+                            placeholder={searchPlaceholder}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-8 h-9 w-full"
@@ -274,24 +309,6 @@ export function DataPage<T extends { id: string | number }>({
             </div>
 
             <DataActionButton onClick={handleAddClick} />
-
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editingItem ? `Edit ${dialogTitle}` : `Add New ${dialogTitle}`}
-                        </DialogTitle>
-                    </DialogHeader>
-                    {renderForm(
-                        handleFormSubmit,
-                        closeDialog,
-                        editingItem ? (() => {
-                            const { id, ...rest } = editingItem
-                            return rest
-                        })() : undefined
-                    )}
-                </DialogContent>
-            </Dialog>
 
             <DeleteConfirmationDialog
                 open={deleteDialogOpen}

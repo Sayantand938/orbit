@@ -4,6 +4,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -48,7 +49,7 @@ export function DataTable<T extends { id: string | number }>({
                     {data.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={displayColumns.length + 1} className="text-center text-muted-foreground">
-                                No items found for this date.
+                                No items found.
                             </TableCell>
                         </TableRow>
                     ) : (
@@ -75,6 +76,7 @@ export function DataTable<T extends { id: string | number }>({
                                             <DropdownMenuItem onClick={() => onEdit(item)}>
                                                 <Pencil className="mr-2 size-4" />
                                                 Edit
+                                                <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => onDeleteClick(item)}
@@ -82,6 +84,7 @@ export function DataTable<T extends { id: string | number }>({
                                             >
                                                 <Trash2 className="mr-2 size-4" />
                                                 Delete
+                                                <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>

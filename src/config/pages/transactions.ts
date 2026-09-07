@@ -1,6 +1,6 @@
 import { formatIST } from '@/lib/time';
 import { type Transaction } from '@/data/types';
-import { type FormFieldConfig, type PageConfig, commonFields, createTransform } from './types';
+import { type FormFieldConfig, type PageConfig, commonFields } from './types';
 
 const categoryOptions = [
     { value: 'Food & Drink', label: 'Food & Drink' },
@@ -26,6 +26,16 @@ const categoryOptions = [
 ];
 
 const extraFields: FormFieldConfig[] = [
+    {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: true,
+        options: [
+            { value: 'income', label: 'Income (Earned)' },
+            { value: 'expense', label: 'Expense (Spent)' },
+        ],
+    },
     {
         name: 'amount',
         label: 'Amount (₹)',
@@ -56,7 +66,13 @@ export const transactionsConfig: PageConfig<Transaction> = {
     formFields: commonFields(categoryOptions, extraFields),
     columns: [
         { header: 'Description', accessor: 'description' },
-        { header: 'Amount (₹)', accessor: 'amount' },
+        {
+            header: 'Amount (₹)',
+            accessor: (item: Transaction) => {
+                const amt = Number(item.amount);
+                return amt < 0 ? `-₹${Math.abs(amt).toFixed(2)}` : `₹${amt.toFixed(2)}`;
+            },
+        },
         { header: 'Category', accessor: 'category' },
         { header: 'Location', accessor: 'location' },
         { header: 'Tags', accessor: 'tags' },
@@ -65,16 +81,18 @@ export const transactionsConfig: PageConfig<Transaction> = {
             accessor: (item: Transaction) => (item.event_time ? formatIST(item.event_time) : 'N/A'),
         },
     ],
-    transform: createTransform<Transaction>({
-        fieldMap: {
-            description: 'description',
-            amount: 'amount',
-            category: 'category',
-            location: 'location',
-            tags: 'tags',
-            event_time: 'event_time',
-        },
-        dateField: 'event_time',
-        numberFields: ['amount'],
-    }),
+    transform: (formData: FormData): Omit<Transaction, 'id'> => {
+        const type = formData.get('type') as string;
+        const amount = parseFloat(formData.get('amount') as string) || 0;
+        const signedAmount = type === 'expense' ? -amount : amount;
+
+        return {
+            description: formData.get('description') as string || '',
+            amount: signedAmount,
+            category: formData.get('category') as string || '',
+            location: formData.get('location') as string || '',
+            tags: formData.get('tags') as string || '',
+            event_time: formData.get('event_time') as string || new Date().toISOString(),
+        };
+    },
 };
