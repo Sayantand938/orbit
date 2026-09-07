@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom"
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,              // 👈 added
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
@@ -10,10 +10,9 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Rotate3D, Wallet, FileText, Clock, Settings, LogOut } from "lucide-react"  // 👈 added LogOut
-import { useAuth } from "@/contexts/AuthContext"   // 👈 added
+import { Rotate3D, Wallet, FileText, Clock, Settings, LogOut } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 const menuItems = [
     { title: "Transactions", icon: Wallet, url: "/transactions" },
@@ -46,7 +45,6 @@ export function AppSidebar() {
                         <Rotate3D className="size-6 text-primary" />
                         <span className="text-lg font-semibold tracking-tight">Orbit</span>
                     </div>
-                    <SidebarTrigger className="text-muted-foreground hover:text-foreground group-data-[state=collapsed]:size-4" />
                 </div>
             </SidebarHeader>
 
@@ -61,7 +59,7 @@ export function AppSidebar() {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton
                                         render={<NavLink to={item.url} />}
-                                        className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors"
+                                        className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-base"  // 👈 added text-base
                                     >
                                         <item.icon className="size-4" />
                                         <span className="group-data-[state=collapsed]:hidden">
@@ -75,13 +73,12 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            {/* 👇 New sign-out section */}
             <SidebarFooter className="border-t border-sidebar-border p-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-destructive hover:text-destructive"
+                            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-destructive hover:text-destructive text-base"  // 👈 also text-base
                         >
                             <LogOut className="size-4" />
                             <span className="group-data-[state=collapsed]:hidden">Sign Out</span>
