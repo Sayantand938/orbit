@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { DataCard } from './DataCard'
+import { DataCardPreview } from './DataCardPreview'
 
 interface DataCardListProps<T> {
     data: T[]
@@ -16,6 +18,8 @@ export function DataCardList<T extends { id: string | number }>({
     onEdit,
     onDeleteClick,
 }: DataCardListProps<T>) {
+    const [previewItem, setPreviewItem] = useState<T | null>(null)
+
     if (data.length === 0) {
         return (
             <div className="flex h-full items-center justify-center rounded-md border py-12 text-center text-muted-foreground">
@@ -25,18 +29,30 @@ export function DataCardList<T extends { id: string | number }>({
     }
 
     return (
-        <div className="flex-1 overflow-auto scrollbar-custom">
-            <div className="space-y-3 pb-2">
-                {data.map((item) => (
-                    <DataCard
-                        key={item.id}
-                        item={item}
-                        columns={displayColumns}
-                        onEdit={onEdit}
-                        onDeleteClick={onDeleteClick}
-                    />
-                ))}
+        <>
+            <div className="flex-1 overflow-auto scrollbar-custom">
+                <div className="space-y-3 pb-2">
+                    {data.map((item) => (
+                        <DataCard
+                            key={item.id}
+                            item={item}
+                            columns={displayColumns}
+                            onOpen={setPreviewItem}
+                        />
+                    ))}
+                </div>
             </div>
-        </div>
+
+            <DataCardPreview
+                item={previewItem}
+                columns={displayColumns}
+                open={previewItem !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPreviewItem(null)
+                }}
+                onEdit={onEdit}
+                onDeleteClick={onDeleteClick}
+            />
+        </>
     )
 }

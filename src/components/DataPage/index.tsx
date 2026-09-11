@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Clipboard, Check, Search, Filter as FilterIcon, X, ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
+import { Clipboard, Check, Search, Filter as FilterIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -11,11 +11,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { DataFilter } from './DataFilter'
-import { DataTable } from './DataTable'
 import { DataCardList } from './DataCardList'
 import { DataActionButton } from './DataActionButton'
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog'
-import { isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns'
+import { DataPageFormOverlay } from './DataPageFormOverlay'
+import { useDataPageFilters } from './useDataPageFilters'
 
 interface DataPageProps<T> {
     title: string
@@ -53,10 +53,6 @@ export function DataPage<T extends { id: string | number }>({
     searchFieldKey = 'description' as keyof T,
     searchPlaceholder = 'Search...',
 }: DataPageProps<T>) {
-    const [searchTerm, setSearchTerm] = useState('')
-    const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
-    const [startDate, setStartDate] = useState<Date | null>(null)
-    const [endDate, setEndDate] = useState<Date | null>(null)
     const [filtersOpen, setFiltersOpen] = useState(false)
     const [open, setOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<T | null>(null)
@@ -64,56 +60,24 @@ export function DataPage<T extends { id: string | number }>({
     const [itemToDelete, setItemToDelete] = useState<T | null>(null)
     const [copied, setCopied] = useState(false)
 
-    const categoryOptions = useMemo(() => {
-        const cats = new Set<string>()
-        data.forEach((item) => {
-            const val = item[categoryFieldKey]
-            if (typeof val === 'string' && val.trim() !== '') {
-                cats.add(val)
-            }
-        })
-        return Array.from(cats).sort()
-    }, [data, categoryFieldKey])
-
-    const activeFilterCount = useMemo(() => {
-        let count = 0
-        if (searchTerm.trim() !== '') count++
-        if (categoryFilter !== null) count++
-        if (startDate !== null) count++
-        if (endDate !== null) count++
-        return count
-    }, [searchTerm, categoryFilter, startDate, endDate])
-
-    const filteredData = data.filter((item) => {
-        if (searchTerm.trim() !== '') {
-            const field = item[searchFieldKey]
-            if (typeof field !== 'string') return false
-            if (!field.toLowerCase().includes(searchTerm.toLowerCase())) return false
-        }
-        if (categoryFilter && item[categoryFieldKey] !== categoryFilter) {
-            return false
-        }
-
-        if (startDate || endDate) {
-            const dateField = item[dateFieldKey]
-            if (!dateField) return false
-            let itemDate: Date
-            try {
-                itemDate = parseISO(dateField as string)
-            } catch {
-                return false
-            }
-            if (startDate && !endDate) {
-                if (itemDate < startOfDay(startDate)) return false
-            } else if (!startDate && endDate) {
-                if (itemDate > endOfDay(endDate)) return false
-            } else if (startDate && endDate) {
-                if (!isWithinInterval(itemDate, { start: startOfDay(startDate), end: endOfDay(endDate) })) {
-                    return false
-                }
-            }
-        }
-        return true
+    const {
+        searchTerm,
+        setSearchTerm,
+        categoryFilter,
+        setCategoryFilter,
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        categoryOptions,
+        activeFilterCount,
+        filteredData,
+        clearFilters,
+    } = useDataPageFilters({
+        data,
+        dateFieldKey,
+        categoryFieldKey,
+        searchFieldKey,
     })
 
     const displayColumns = [
@@ -169,46 +133,18 @@ export function DataPage<T extends { id: string | number }>({
         }
     }
 
-    const handleClearFilters = () => {
-        setSearchTerm('')
-        setCategoryFilter(null)
-        setStartDate(null)
-        setEndDate(null)
-    }
-
     const hasFilters = activeFilterCount > 0
     const dialogTitle = singularTitle || (title.endsWith('s') ? title.slice(0, -1) : title)
 
     if (open) {
-        const initialData = editingItem
-            ? (() => {
-                const { id, ...rest } = editingItem
-                return rest
-            })()
-            : undefined
-
         return (
-            <div className="fixed inset-0 z-50 flex flex-col bg-background">
-                <div className="flex items-center gap-3 border-b p-4">
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={closeForm}
-                        aria-label="Go back"
-                    >
-                        <ArrowLeft className="size-5" />
-                    </Button>
-                    <h2 className="text-xl font-semibold">
-                        {editingItem ? `Edit ${dialogTitle}` : `Add New ${dialogTitle}`}
-                    </h2>
-                </div>
-
-                <div className="flex-1 overflow-auto scrollbar-custom p-6">
-                    <div className="max-w-2xl mx-auto">
-                        {renderForm(handleFormSubmit, closeForm, initialData)}
-                    </div>
-                </div>
-            </div>
+            <DataPageFormOverlay
+                dialogTitle={dialogTitle}
+                editingItem={editingItem}
+                renderForm={renderForm}
+                onSubmit={handleFormSubmit}
+                onClose={closeForm}
+            />
         )
     }
 
@@ -269,7 +205,7 @@ export function DataPage<T extends { id: string | number }>({
                                     <Button
                                         variant="ghost"
                                         size="icon-sm"
-                                        onClick={handleClearFilters}
+                                        onClick={clearFilters}
                                         className="shrink-0"
                                     >
                                         <X className="size-4" />
@@ -300,22 +236,12 @@ export function DataPage<T extends { id: string | number }>({
             </Collapsible>
 
             <div className="flex-1 min-h-0 flex flex-col">
-                <div className="flex flex-1 min-h-0 flex-col md:hidden">
-                    <DataCardList
-                        data={filteredData}
-                        displayColumns={displayColumns}
-                        onEdit={handleEdit}
-                        onDeleteClick={handleDeleteClick}
-                    />
-                </div>
-                <div className="hidden flex-1 min-h-0 md:block">
-                    <DataTable
-                        data={filteredData}
-                        displayColumns={displayColumns}
-                        onEdit={handleEdit}
-                        onDeleteClick={handleDeleteClick}
-                    />
-                </div>
+                <DataCardList
+                    data={filteredData}
+                    displayColumns={displayColumns}
+                    onEdit={handleEdit}
+                    onDeleteClick={handleDeleteClick}
+                />
             </div>
 
             <DataActionButton onClick={handleAddClick} />
