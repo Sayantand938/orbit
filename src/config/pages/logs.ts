@@ -1,4 +1,5 @@
 import { formatIST } from '@/lib/time';
+import { parseTags, tagsToInput } from '@/lib/utils';
 import { type Log } from '@/data/types';
 import { logCategoryOptions } from '@/config/options';
 import { type FormFieldConfig, type PageConfig, commonFields } from './types';
@@ -28,7 +29,10 @@ export const logsConfig: PageConfig<Log> = {
     columns: [
         { header: 'Description', accessor: 'description' },
         { header: 'Category', accessor: 'category' },
-        { header: 'Tags', accessor: 'tags' },
+        {
+            header: 'Tags',
+            accessor: (item: Log) => item.tags.join(', '),
+        },
         { header: 'Place', accessor: 'place' },
         {
             header: 'Event Time',
@@ -38,8 +42,12 @@ export const logsConfig: PageConfig<Log> = {
     transform: (values) => ({
         description: values.description ?? '',
         category: values.category ?? '',
-        tags: values.tags ?? '',
+        tags: parseTags(values.tags),
         place: values.place ?? '',
         event_time: values.event_time || new Date().toISOString(),
+    }),
+    toFormValues: (entity) => ({
+        ...entity,
+        tags: tagsToInput(entity.tags),
     }),
 };

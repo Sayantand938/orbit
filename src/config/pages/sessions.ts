@@ -1,4 +1,5 @@
 import { formatIST, formatDuration } from '@/lib/time';
+import { parseTags, tagsToInput } from '@/lib/utils';
 import { type Session } from '@/data/types';
 import { sessionCategoryOptions } from '@/config/options';
 import { type FormFieldConfig, type PageConfig, commonFields } from './types';
@@ -28,7 +29,10 @@ export const sessionsConfig: PageConfig<Session> = {
   columns: [
     { header: 'Description', accessor: 'description' },
     { header: 'Category', accessor: 'category' },
-    { header: 'Tags', accessor: 'tags' },
+    {
+      header: 'Tags',
+      accessor: (item: Session) => item.tags.join(', '),
+    },
     {
       header: 'Start Time',
       accessor: (item: Session) => (item.startTime ? formatIST(item.startTime) : 'N/A'),
@@ -45,8 +49,12 @@ export const sessionsConfig: PageConfig<Session> = {
   transform: (values) => ({
     description: values.description ?? '',
     category: values.category ?? '',
-    tags: values.tags ?? '',
+    tags: parseTags(values.tags),
     startTime: values.startTime || new Date().toISOString(),
     endTime: values.endTime || null,
+  }),
+  toFormValues: (entity) => ({
+    ...entity,
+    tags: tagsToInput(entity.tags),
   }),
 };

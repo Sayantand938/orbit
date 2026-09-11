@@ -1,4 +1,5 @@
 import { formatIST } from '@/lib/time';
+import { parseTags, tagsToInput } from '@/lib/utils';
 import { type Transaction } from '@/data/types';
 import {
     transactionCategoryOptions,
@@ -53,7 +54,10 @@ export const transactionsConfig: PageConfig<Transaction> = {
         },
         { header: 'Category', accessor: 'category' },
         { header: 'Location', accessor: 'location' },
-        { header: 'Tags', accessor: 'tags' },
+        {
+            header: 'Tags',
+            accessor: (item: Transaction) => item.tags.join(', '),
+        },
         {
             header: 'Event Time',
             accessor: (item: Transaction) =>
@@ -70,7 +74,7 @@ export const transactionsConfig: PageConfig<Transaction> = {
             amount: signedAmount,
             category: values.category ?? '',
             location: values.location ?? '',
-            tags: values.tags ?? '',
+            tags: parseTags(values.tags),
             event_time: values.event_time || new Date().toISOString(),
         };
     },
@@ -78,5 +82,6 @@ export const transactionsConfig: PageConfig<Transaction> = {
         ...entity,
         amount: Math.abs(entity.amount),
         type: entity.amount < 0 ? 'expense' : 'income',
+        tags: tagsToInput(entity.tags),
     }),
 };

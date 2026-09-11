@@ -4,7 +4,7 @@ export interface Transaction {
     amount: number
     category: string
     location: string
-    tags: string
+    tags: string[]
     event_time: string
 }
 
@@ -12,7 +12,7 @@ export interface Log {
     id: string
     description: string
     category: string
-    tags: string
+    tags: string[]
     place: string
     event_time: string
 }
@@ -21,7 +21,7 @@ export interface Session {
     id: string
     description: string
     category: string
-    tags: string
+    tags: string[]
     startTime: string
-    endTime: string | null   // 👈 now nullable
+    endTime: string | null
 }

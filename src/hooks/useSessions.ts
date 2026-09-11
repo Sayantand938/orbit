@@ -3,6 +3,7 @@ import type { Session } from "@/data/types";
 
 const transformSession = (item: any): Session => ({
     ...item,
+    tags: Array.isArray(item.tags) ? item.tags : [],
     endTime: item.endTime ?? null,
 });
 

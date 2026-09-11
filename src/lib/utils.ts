@@ -22,14 +22,35 @@ export function getSingularName(tableName: string): string {
 
 /**
  * Show a success toast for resource operations.
- * @param action - The action performed: 'created', 'updated', or 'deleted'.
- * @param resourceName - The singular name of the resource (e.g., 'transaction').
  */
-export function notifySuccess(action: 'created' | 'updated' | 'deleted', resourceName: string): void {
+export function notifySuccess(
+  action: 'created' | 'updated' | 'deleted',
+  resourceName: string
+): void {
   const pastTense = {
     created: 'created',
     updated: 'updated',
     deleted: 'deleted',
   }[action];
   toast.success(`${resourceName} ${pastTense} successfully`);
+}
+
+/**
+ * Parse a comma-separated tag input into a clean string array.
+ * "Coffee, Morning ,WORK" → ["coffee", "morning", "work"]
+ */
+export function parseTags(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/**
+ * Render a tag array back into the comma-separated string the form input expects.
+ * ["coffee", "morning"] → "coffee, morning"
+ */
+export function tagsToInput(tags: string[] | null | undefined): string {
+  return (tags ?? []).join(', ');
 }
