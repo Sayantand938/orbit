@@ -1,5 +1,6 @@
 import { formatIST } from '@/lib/time';
 import { parseTags, tagsToInput } from '@/lib/utils';
+import { TagList } from '@/components/ui/TagList';
 import { type Transaction } from '@/data/types';
 import {
     transactionCategoryOptions,
@@ -56,7 +57,7 @@ export const transactionsConfig: PageConfig<Transaction> = {
         { header: 'Location', accessor: 'location' },
         {
             header: 'Tags',
-            accessor: (item: Transaction) => item.tags.join(', '),
+            accessor: (item: Transaction) => <TagList tags={item.tags} />,
         },
         {
             header: 'Event Time',

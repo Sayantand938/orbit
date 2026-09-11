@@ -32,7 +32,6 @@ export function DataCard<T extends { id: string | number }>({
     onEdit,
     onDeleteClick,
 }: DataCardProps<T>) {
-    // The DataPage injects an "SL" column — noise on a card, drop it.
     const meaningful = columns.filter((c) => c.header !== 'SL')
     if (meaningful.length === 0) return null
 
@@ -42,7 +41,6 @@ export function DataCard<T extends { id: string | number }>({
 
     return (
         <div className="rounded-lg border bg-card p-4 space-y-3">
-            {/* Title row */}
             <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="font-medium truncate">
@@ -80,7 +78,6 @@ export function DataCard<T extends { id: string | number }>({
                 </DropdownMenu>
             </div>
 
-            {/* Detail grid */}
             {details.length > 0 && (
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-2 border-t pt-3 text-sm">
                     {details.map((col) => (
@@ -88,7 +85,7 @@ export function DataCard<T extends { id: string | number }>({
                             <dt className="truncate text-xs text-muted-foreground">
                                 {col.header}
                             </dt>
-                            <dd className="truncate">{renderValue(col, item)}</dd>
+                            <dd className="min-w-0 break-words">{renderValue(col, item)}</dd>
                         </div>
                     ))}
                 </dl>

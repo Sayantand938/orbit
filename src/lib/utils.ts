@@ -8,7 +8,6 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Convert a plural table name to singular form.
- * Examples: transactions → transaction, logs → log, sessions → session, categories → category.
  */
 export function getSingularName(tableName: string): string {
   if (tableName.endsWith('ies')) {
@@ -36,20 +35,20 @@ export function notifySuccess(
 }
 
 /**
- * Parse a comma-separated tag input into a clean string array.
- * "Coffee, Morning ,WORK" → ["coffee", "morning", "work"]
+ * Parse a comma-separated tag input into a clean, deduped, lowercase array.
+ * "Coffee, Morning ,WORK, coffee" → ["coffee", "morning", "work"]
  */
 export function parseTags(raw: string | null | undefined): string[] {
   if (!raw) return [];
-  return raw
+  const cleaned = raw
     .split(',')
     .map((t) => t.trim().toLowerCase())
     .filter(Boolean);
+  return [...new Set(cleaned)];
 }
 
 /**
  * Render a tag array back into the comma-separated string the form input expects.
- * ["coffee", "morning"] → "coffee, morning"
  */
 export function tagsToInput(tags: string[] | null | undefined): string {
   return (tags ?? []).join(', ');

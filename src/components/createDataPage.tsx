@@ -19,9 +19,17 @@ export function createDataPage<T extends { id: string | number }>({
     config: PageConfig<T>;
     schema: ZodSchema;
     useList: () => UseQueryResult<T[], Error>;
-    useAdd: () => { mutate: (item: Omit<T, "id">) => void };
-    useUpdate: () => { mutate: (params: { id: string | number; updates: Omit<T, "id"> }) => void };
-    useDelete: () => { mutate: (id: string | number) => void };
+    useAdd: () => {
+        mutate: (item: Omit<T, "id">) => void;
+        mutateAsync: (item: Omit<T, "id">) => Promise<unknown>;
+    };
+    useUpdate: () => {
+        mutate: (params: { id: string | number; updates: Omit<T, "id"> }) => void;
+        mutateAsync: (params: { id: string | number; updates: Omit<T, "id"> }) => Promise<unknown>;
+    };
+    useDelete: () => {
+        mutate: (id: string | number) => void;
+    };
 }) {
     return function DataPageComponent() {
         const location = useLocation();
@@ -49,8 +57,12 @@ export function createDataPage<T extends { id: string | number }>({
                     singularTitle={config.singularTitle}
                     data={data}
                     columns={config.columns}
-                    onAdd={(newItem) => addMutation.mutate(newItem)}
-                    onUpdate={(id, updates) => updateMutation.mutate({ id, updates })}
+                    onAdd={async (newItem) => {
+                        await addMutation.mutateAsync(newItem);
+                    }}
+                    onUpdate={async (id, updates) => {
+                        await updateMutation.mutateAsync({ id, updates });
+                    }}
                     onDelete={(id) => deleteMutation.mutate(id)}
                     dateFieldKey={config.dateFilterKey}
                     searchFieldKey={config.searchFieldKey}

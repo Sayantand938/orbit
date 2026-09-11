@@ -26,12 +26,12 @@ interface DataPageProps<T> {
         accessor: keyof T | ((item: T, index: number) => React.ReactNode)
     }[]
     renderForm: (
-        onSubmit: (newItem: Omit<T, 'id'>) => void,
+        onSubmit: (newItem: Omit<T, 'id'>) => Promise<void> | void,
         closeDialog: () => void,
         initialData?: Omit<T, 'id'>
     ) => React.ReactNode
-    onAdd: (newItem: Omit<T, 'id'>) => void
-    onUpdate: (id: string | number, updates: Omit<T, 'id'>) => void
+    onAdd: (newItem: Omit<T, 'id'>) => Promise<void> | void
+    onUpdate: (id: string | number, updates: Omit<T, 'id'>) => Promise<void> | void
     onDelete: (id: string | number) => void
     dateFieldKey: keyof T
     categoryFieldKey?: keyof T
@@ -94,9 +94,6 @@ export function DataPage<T extends { id: string | number }>({
             return false
         }
 
-        // Only apply date filtering when at least one bound is set.
-        // Without this guard, rows with a null/empty date would be
-        // dropped even when the user has no date filter active.
         if (startDate || endDate) {
             const dateField = item[dateFieldKey]
             if (!dateField) return false
@@ -142,11 +139,11 @@ export function DataPage<T extends { id: string | number }>({
         }
     }
 
-    const handleFormSubmit = (data: Omit<T, 'id'>) => {
+    const handleFormSubmit = async (data: Omit<T, 'id'>) => {
         if (editingItem) {
-            onUpdate(editingItem.id, data)
+            await onUpdate(editingItem.id, data)
         } else {
-            onAdd(data)
+            await onAdd(data)
         }
         closeForm()
     }
@@ -182,7 +179,6 @@ export function DataPage<T extends { id: string | number }>({
     const hasFilters = activeFilterCount > 0
     const dialogTitle = singularTitle || (title.endsWith('s') ? title.slice(0, -1) : title)
 
-    // Full‑page form overlay
     if (open) {
         const initialData = editingItem
             ? (() => {
@@ -193,7 +189,6 @@ export function DataPage<T extends { id: string | number }>({
 
         return (
             <div className="fixed inset-0 z-50 flex flex-col bg-background">
-                {/* Header */}
                 <div className="flex items-center gap-3 border-b p-4">
                     <Button
                         variant="ghost"
@@ -208,7 +203,6 @@ export function DataPage<T extends { id: string | number }>({
                     </h2>
                 </div>
 
-                {/* Scrollable content with custom scrollbar */}
                 <div className="flex-1 overflow-auto scrollbar-custom p-6">
                     <div className="max-w-2xl mx-auto">
                         {renderForm(handleFormSubmit, closeForm, initialData)}
@@ -218,7 +212,6 @@ export function DataPage<T extends { id: string | number }>({
         )
     }
 
-    // Main view
     return (
         <div className="p-6 space-y-6 h-full flex flex-col">
             <h1 className="text-2xl font-bold">{title}</h1>
@@ -307,7 +300,6 @@ export function DataPage<T extends { id: string | number }>({
             </Collapsible>
 
             <div className="flex-1 min-h-0 flex flex-col">
-                {/* Mobile: cards */}
                 <div className="flex flex-1 min-h-0 flex-col md:hidden">
                     <DataCardList
                         data={filteredData}
@@ -316,7 +308,6 @@ export function DataPage<T extends { id: string | number }>({
                         onDeleteClick={handleDeleteClick}
                     />
                 </div>
-                {/* Desktop: table */}
                 <div className="hidden flex-1 min-h-0 md:block">
                     <DataTable
                         data={filteredData}
