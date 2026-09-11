@@ -1,29 +1,10 @@
 import { formatIST } from '@/lib/time';
 import { type Transaction } from '@/data/types';
+import {
+    transactionCategoryOptions,
+    transactionTypeOptions,
+} from '@/config/options';
 import { type FormFieldConfig, type PageConfig, commonFields } from './types';
-
-const categoryOptions = [
-    { value: 'Food & Drink', label: 'Food & Drink' },
-    { value: 'Transportation', label: 'Transportation' },
-    { value: 'Shopping', label: 'Shopping' },
-    { value: 'Entertainment', label: 'Entertainment' },
-    { value: 'Utilities', label: 'Utilities' },
-    { value: 'Rent / Mortgage', label: 'Rent / Mortgage' },
-    { value: 'Healthcare', label: 'Healthcare' },
-    { value: 'Education', label: 'Education' },
-    { value: 'Insurance', label: 'Insurance' },
-    { value: 'Groceries', label: 'Groceries' },
-    { value: 'Dining Out', label: 'Dining Out' },
-    { value: 'Coffee', label: 'Coffee' },
-    { value: 'Alcohol & Bars', label: 'Alcohol & Bars' },
-    { value: 'Clothing', label: 'Clothing' },
-    { value: 'Electronics', label: 'Electronics' },
-    { value: 'Home Improvement', label: 'Home Improvement' },
-    { value: 'Travel', label: 'Travel' },
-    { value: 'Subscriptions', label: 'Subscriptions' },
-    { value: 'Gifts', label: 'Gifts' },
-    { value: 'Other', label: 'Other' },
-];
 
 const extraFields: FormFieldConfig[] = [
     {
@@ -31,10 +12,7 @@ const extraFields: FormFieldConfig[] = [
         label: 'Type',
         type: 'select',
         required: true,
-        options: [
-            { value: 'income', label: 'Income (Earned)' },
-            { value: 'expense', label: 'Expense (Spent)' },
-        ],
+        options: transactionTypeOptions,
     },
     {
         name: 'amount',
@@ -53,7 +31,7 @@ const extraFields: FormFieldConfig[] = [
         name: 'event_time',
         label: 'Event Time',
         type: 'datetime-local',
-        hint: 'Pre‑filled with current time – you can change it.',
+        hint: 'Pre-filled with current time – you can change it.',
         autoFill: true,
     },
 ];
@@ -63,7 +41,7 @@ export const transactionsConfig: PageConfig<Transaction> = {
     singularTitle: 'Transaction',
     dateFilterKey: 'event_time',
     searchPlaceholder: 'Search transactions...',
-    formFields: commonFields(categoryOptions, extraFields),
+    formFields: commonFields(transactionCategoryOptions, extraFields),
     columns: [
         { header: 'Description', accessor: 'description' },
         {
@@ -78,21 +56,27 @@ export const transactionsConfig: PageConfig<Transaction> = {
         { header: 'Tags', accessor: 'tags' },
         {
             header: 'Event Time',
-            accessor: (item: Transaction) => (item.event_time ? formatIST(item.event_time) : 'N/A'),
+            accessor: (item: Transaction) =>
+                item.event_time ? formatIST(item.event_time) : 'N/A',
         },
     ],
-    transform: (formData: FormData): Omit<Transaction, 'id'> => {
-        const type = formData.get('type') as string;
-        const amount = parseFloat(formData.get('amount') as string) || 0;
-        const signedAmount = type === 'expense' ? -amount : amount;
+    transform: (values) => {
+        const type = values.type as string;
+        const rawAmount = Number(values.amount) || 0;
+        const signedAmount = type === 'expense' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
 
         return {
-            description: formData.get('description') as string || '',
+            description: values.description ?? '',
             amount: signedAmount,
-            category: formData.get('category') as string || '',
-            location: formData.get('location') as string || '',
-            tags: formData.get('tags') as string || '',
-            event_time: formData.get('event_time') as string || new Date().toISOString(),
+            category: values.category ?? '',
+            location: values.location ?? '',
+            tags: values.tags ?? '',
+            event_time: values.event_time || new Date().toISOString(),
         };
     },
+    toFormValues: (entity) => ({
+        ...entity,
+        amount: Math.abs(entity.amount),
+        type: entity.amount < 0 ? 'expense' : 'income',
+    }),
 };

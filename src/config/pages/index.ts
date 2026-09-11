@@ -1,4 +1,5 @@
 export * from './types';
+export * from '@/config/options';
 
 import { transactionsConfig } from './transactions';
 import { logsConfig } from './logs';

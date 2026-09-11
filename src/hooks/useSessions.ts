@@ -3,7 +3,7 @@ import type { Session } from "@/data/types";
 
 const transformSession = (item: any): Session => ({
     ...item,
-    endTime: item.endTime || "",
+    endTime: item.endTime ?? null,
 });
 
 const { useList, useAdd, useUpdate, useDelete } = createResourceHooks<Session>(

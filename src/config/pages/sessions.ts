@@ -1,23 +1,14 @@
 import { formatIST, formatDuration } from '@/lib/time';
 import { type Session } from '@/data/types';
-import { type FormFieldConfig, type PageConfig, commonFields, createTransform } from './types';
-
-const categoryOptions = [
-  { value: 'Work', label: 'Work' },
-  { value: 'Meeting', label: 'Meeting' },
-  { value: 'Study', label: 'Study' },
-  { value: 'Personal', label: 'Personal' },
-  { value: 'Fitness', label: 'Fitness' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Other', label: 'Other' },
-];
+import { sessionCategoryOptions } from '@/config/options';
+import { type FormFieldConfig, type PageConfig, commonFields } from './types';
 
 const extraFields: FormFieldConfig[] = [
   {
     name: 'startTime',
     label: 'Start Time',
     type: 'datetime-local',
-    hint: 'Pre‑filled with current time – you can change it.',
+    hint: 'Pre-filled with current time – you can change it.',
     autoFill: true,
   },
   {
@@ -33,7 +24,7 @@ export const sessionsConfig: PageConfig<Session> = {
   singularTitle: 'Session',
   dateFilterKey: 'startTime',
   searchPlaceholder: 'Search sessions...',
-  formFields: commonFields(categoryOptions, extraFields),
+  formFields: commonFields(sessionCategoryOptions, extraFields),
   columns: [
     { header: 'Description', accessor: 'description' },
     { header: 'Category', accessor: 'category' },
@@ -51,14 +42,11 @@ export const sessionsConfig: PageConfig<Session> = {
       accessor: (item: Session) => formatDuration(item.startTime, item.endTime),
     },
   ],
-  transform: createTransform<Session>({
-    fieldMap: {
-      description: 'description',
-      category: 'category',
-      tags: 'tags',
-      startTime: 'startTime',
-      endTime: 'endTime',
-    },
-    dateField: 'startTime',
+  transform: (values) => ({
+    description: values.description ?? '',
+    category: values.category ?? '',
+    tags: values.tags ?? '',
+    startTime: values.startTime || new Date().toISOString(),
+    endTime: values.endTime || null,
   }),
 };

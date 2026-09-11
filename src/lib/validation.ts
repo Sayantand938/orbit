@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { FormFieldConfig } from '@/config/pages';
+import { transactionsConfig, logsConfig, sessionsConfig } from '@/config/pages';
 
 export function createSchemaFromFields(fields: readonly FormFieldConfig[]) {
     const shape: Record<string, z.ZodTypeAny> = {};
@@ -9,24 +10,31 @@ export function createSchemaFromFields(fields: readonly FormFieldConfig[]) {
 
         if (field.type === 'datetime-local') {
             if (field.required) {
-                zodType = z.preprocess(
-                    (val) => (val === '' ? undefined : val),
-                    z.string().datetime({ offset: true })
-                );
+                zodType = z
+                    .union([z.string(), z.null(), z.undefined()])
+                    .refine((val): val is string => typeof val === 'string' && val.length > 0, {
+                        message: `${field.label} is required`,
+                    });
             } else {
-                zodType = z.preprocess(
-                    (val) => (val === '' ? undefined : val),
-                    z.string().datetime({ offset: true }).optional()
-                );
+                zodType = z
+                    .union([z.string(), z.null(), z.undefined()])
+                    .transform((val) => (val ? val : null));
             }
         } else if (field.type === 'number') {
             if (field.required) {
-                zodType = z.coerce.number();
+                zodType = z.preprocess(
+                    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+                    z.coerce
+                        .number()
+                        .refine((n) => !isNaN(n), { message: `${field.label} must be a number` })
+                );
             } else {
-                zodType = z.coerce.number().optional();
+                zodType = z.preprocess(
+                    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+                    z.coerce.number().optional()
+                );
             }
         } else {
-            // text or select
             if (field.required) {
                 zodType = z.string().min(1, `${field.label} is required`);
             } else {
@@ -40,20 +48,19 @@ export function createSchemaFromFields(fields: readonly FormFieldConfig[]) {
     return z.object(shape);
 }
 
-// Pre-built schemas using the configs
-import { transactionsConfig, logsConfig, sessionsConfig } from '@/config/pages';
-
-export const transactionFormSchema = createSchemaFromFields(transactionsConfig.formFields)
-    .refine((data) => {
-        // Ensure amount is a positive number
+export const transactionFormSchema = createSchemaFromFields(transactionsConfig.formFields).refine(
+    (data) => {
         const amount = data.amount;
         return typeof amount === 'number' && amount > 0;
-    }, {
+    },
+    {
         message: 'Amount must be a positive number',
         path: ['amount'],
-    });
+    }
+);
 
 export const logFormSchema = createSchemaFromFields(logsConfig.formFields);
+
 export const sessionFormSchema = createSchemaFromFields(sessionsConfig.formFields).refine(
     (data) => {
         if (data.startTime && data.endTime) {
@@ -68,8 +75,3 @@ export const sessionFormSchema = createSchemaFromFields(sessionsConfig.formField
         path: ['endTime'],
     }
 );
-
-export function validateFormData(formData: FormData, schema: z.ZodSchema): void {
-    const raw = Object.fromEntries(formData.entries());
-    schema.parse(raw);
-}

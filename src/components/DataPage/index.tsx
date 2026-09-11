@@ -92,21 +92,27 @@ export function DataPage<T extends { id: string | number }>({
         if (categoryFilter && item[categoryFieldKey] !== categoryFilter) {
             return false
         }
-        const dateField = item[dateFieldKey]
-        if (!dateField) return false
-        let itemDate: Date
-        try {
-            itemDate = parseISO(dateField as string)
-        } catch {
-            return false
-        }
-        if (startDate && !endDate) {
-            if (itemDate < startOfDay(startDate)) return false
-        } else if (!startDate && endDate) {
-            if (itemDate > endOfDay(endDate)) return false
-        } else if (startDate && endDate) {
-            if (!isWithinInterval(itemDate, { start: startOfDay(startDate), end: endOfDay(endDate) })) {
+
+        // Only apply date filtering when at least one bound is set.
+        // Without this guard, rows with a null/empty date would be
+        // dropped even when the user has no date filter active.
+        if (startDate || endDate) {
+            const dateField = item[dateFieldKey]
+            if (!dateField) return false
+            let itemDate: Date
+            try {
+                itemDate = parseISO(dateField as string)
+            } catch {
                 return false
+            }
+            if (startDate && !endDate) {
+                if (itemDate < startOfDay(startDate)) return false
+            } else if (!startDate && endDate) {
+                if (itemDate > endOfDay(endDate)) return false
+            } else if (startDate && endDate) {
+                if (!isWithinInterval(itemDate, { start: startOfDay(startDate), end: endOfDay(endDate) })) {
+                    return false
+                }
             }
         }
         return true

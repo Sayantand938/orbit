@@ -24,10 +24,12 @@ export interface PageConfig<T> {
         header: string;
         accessor: keyof T | ((item: T) => React.ReactNode);
     }[];
-    transform: (formData: FormData) => Omit<T, 'id'>;
+    /** Given validated RHF values, produce the entity shape (minus id). */
+    transform: (values: Record<string, any>) => Omit<T, 'id'>;
+    /** Given an existing entity, produce the form's default values. Optional. */
+    toFormValues?: (entity: Omit<T, 'id'>) => Record<string, any>;
 }
 
-// Helper to create common fields
 export function commonFields(
     categoryOptions: { value: string; label: string }[],
     extraFields: FormFieldConfig[] = []
@@ -56,35 +58,4 @@ export function commonFields(
         },
     ];
     return [...base, ...extraFields];
-}
-
-// Options for creating a transform function
-type TransformOptions<T> = {
-    fieldMap: Record<keyof Omit<T, 'id'>, string>;
-    dateField?: keyof Omit<T, 'id'>;
-    numberFields?: (keyof Omit<T, 'id'>)[];
-};
-
-export function createTransform<T extends { id: string | number }>(
-    options: TransformOptions<T>
-): (formData: FormData) => Omit<T, 'id'> {
-    const { fieldMap, dateField, numberFields = [] } = options;
-    return (formData: FormData): Omit<T, 'id'> => {
-        const result: Record<string, any> = {};
-        for (const [prop, fieldName] of Object.entries(fieldMap)) {
-            const value = formData.get(fieldName as string);
-            if (numberFields.includes(prop as keyof Omit<T, 'id'>)) {
-                result[prop] = typeof value === 'string' ? parseFloat(value) : undefined;
-            } else {
-                result[prop] = value ?? '';
-            }
-        }
-        if (dateField) {
-            const dateKey = dateField as string;
-            if (!result[dateKey]) {
-                result[dateKey] = new Date().toISOString();
-            }
-        }
-        return result as Omit<T, 'id'>;
-    };
 }

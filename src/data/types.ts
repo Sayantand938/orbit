@@ -20,8 +20,8 @@ export interface Log {
 export interface Session {
     id: string
     description: string
-    category: string   // ✅ now only one definition
+    category: string
     tags: string
-    startTime: string   // ISO datetime
-    endTime: string     // ISO datetime
+    startTime: string
+    endTime: string | null   // 👈 now nullable
 }

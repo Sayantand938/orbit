@@ -3,7 +3,7 @@ import { startOfDay, endOfDay } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import { useSessions } from "@/hooks/useSessions"
 
-function getDurationMinutes(start?: string, end?: string): number {
+function getDurationMinutes(start?: string | null, end?: string | null): number {
     if (!start || !end) return 0
     const s = new Date(start)
     const e = new Date(end)
