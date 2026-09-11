@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { DataFilter } from './DataFilter'
 import { DataTable } from './DataTable'
+import { DataCardList } from './DataCardList'
 import { DataActionButton } from './DataActionButton'
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog'
 import { isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns'
@@ -305,13 +306,25 @@ export function DataPage<T extends { id: string | number }>({
                 </CollapsibleContent>
             </Collapsible>
 
-            <div className="flex-1 min-h-0">
-                <DataTable
-                    data={filteredData}
-                    displayColumns={displayColumns}
-                    onEdit={handleEdit}
-                    onDeleteClick={handleDeleteClick}
-                />
+            <div className="flex-1 min-h-0 flex flex-col">
+                {/* Mobile: cards */}
+                <div className="flex flex-1 min-h-0 flex-col md:hidden">
+                    <DataCardList
+                        data={filteredData}
+                        displayColumns={displayColumns}
+                        onEdit={handleEdit}
+                        onDeleteClick={handleDeleteClick}
+                    />
+                </div>
+                {/* Desktop: table */}
+                <div className="hidden flex-1 min-h-0 md:block">
+                    <DataTable
+                        data={filteredData}
+                        displayColumns={displayColumns}
+                        onEdit={handleEdit}
+                        onDeleteClick={handleDeleteClick}
+                    />
+                </div>
             </div>
 
             <DataActionButton onClick={handleAddClick} />
