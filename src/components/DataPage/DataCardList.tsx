@@ -32,10 +32,11 @@ export function DataCardList<T extends { id: string | number }>({
         <>
             <div className="flex-1 overflow-auto scrollbar-custom">
                 <div className="space-y-3 pb-2">
-                    {data.map((item) => (
+                    {data.map((item, index) => (
                         <DataCard
                             key={item.id}
                             item={item}
+                            index={index}
                             columns={displayColumns}
                             onOpen={setPreviewItem}
                         />
