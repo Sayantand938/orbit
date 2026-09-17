@@ -32,7 +32,7 @@ export function StatCard({
             <CardContent>
                 <span
                     className={cn(
-                        "font-mono font-semibold tabular-nums",
+                        "font-martian font-semibold tabular-nums",
                         size === "sm" ? "text-xl" : "text-2xl"
                     )}
                 >

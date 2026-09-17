@@ -17,7 +17,6 @@ export function Timer() {
 
     const runningSession = getRunningSession(sessions)
     const running = runningSession !== null
-
     const now = useNowWhenRunning(sessions, TIMER.TICK_MS)
 
     const handleStartStop = () => {
@@ -33,11 +32,11 @@ export function Timer() {
 
     return (
         <div className="flex h-full flex-col items-center justify-center gap-8">
-            <div className="flex items-baseline gap-1 font-mono tabular-nums">
-                <span className="text-7xl font-semibold tracking-tight sm:text-8xl">
+            <div className="flex items-baseline gap-1 font-martian tabular-nums">
+                <span className="text-5xl font-semibold tracking-tight sm:text-7xl lg:text-8xl">
                     {main}
                 </span>
-                <span className="text-3xl font-medium text-muted-foreground sm:text-4xl">
+                <span className="text-2xl font-medium text-muted-foreground sm:text-3xl lg:text-4xl">
                     .{centiseconds}
                 </span>
             </div>
@@ -61,7 +60,6 @@ export function Timer() {
                         </>
                     )}
                 </Button>
-
                 <Button
                     size="lg"
                     variant="outline"
