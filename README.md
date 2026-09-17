@@ -1,21 +1,37 @@
-# React + TypeScript + Vite + shadcn/ui
+# Orbit — Local-First Time Tracker
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+Orbit is a privacy-focused, offline-capable time tracking application that runs entirely in your browser. It features a clean, responsive interface, detailed productivity analytics, and robust data management—all without requiring a backend server or user account.
 
-## Adding components
+## ✨ Features
 
-To add components to your app, run the following command:
+- ⏱️ **Precision Timer**: Start, stop, and discard sessions with sub-second accuracy.
+- 📊 **Dashboard Analytics**: Track total time, average session/daily duration, most/least productive days, and 8+ hour streaks.
+- 📅 **History & Logs**: Review daily sessions with an hourly breakdown chart. Edit or delete individual sessions as needed.
+- 💾 **Local-First Storage**: All data is securely stored in your browser's IndexedDB. No data leaves your device.
+- 📤 **Data Portability**: Export your sessions to JSON or import existing data (with merge/replace options).
+- 🌓 **Theme Support**: Light, Dark, and System modes (press `D` anywhere to quickly toggle).
+- 📱 **PWA Ready**: Installable on desktop and mobile, with offline support and automatic background updates.
 
-```bash
-npx shadcn@latest add button
-```
+## 🛠️ Tech Stack
 
-This will place the ui components in the `src/components` directory.
+- **Framework**: React 19 + TypeScript
+- **Build Tool**: Vite 8
+- **Styling**: Tailwind CSS v4 + `tw-animate-css`
+- **UI Components**: shadcn/ui (built on `@base-ui/react`)
+- **State Management**: Zustand (persisted to IndexedDB via Dexie)
+- **Charts**: Recharts
+- **Date Handling**: `date-fns` + `react-day-picker`
+- **PWA**: `vite-plugin-pwa` (Workbox)
 
-## Using components
+## 🚀 Getting Started
 
-To use the components in your app, import them as follows:
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v20+ recommended)
+- [pnpm](https://pnpm.io/) (or npm/yarn)
 
-```tsx
-import { Button } from "@/components/ui/button"
-```
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/orbit.git
+   cd orbit
