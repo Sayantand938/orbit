@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="Track your time, locally in your browser." />
+
+  <title>Orbit</title>
+
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="icon" type="image/png" href="/pwa-192x192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Orbit" />
+
+  <!-- Anti-FOUC theme script -->
+  <script>
+    ; (function () {
+      try {
+        // Keep in sync with STORAGE_KEYS.THEME in src/lib/config.ts
+        var storageKey = "theme"
+        var stored = localStorage.getItem(storageKey)
+        var theme =
+          stored === "dark" || stored === "light" || stored === "system"
+            ? stored
+            : "system"
+        var resolved =
+          theme === "system"
+            ? window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : theme
+        document.documentElement.classList.add(resolved)
+      } catch (_) {
+        // localStorage unavailable — fall through to default (light).
+      }
+    })()
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

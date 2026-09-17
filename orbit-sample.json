@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exportedAt": "2026-09-16T15:35:30.422Z",
+  "sessions": [
+    {
+      "id": "d26f0de9-d698-4a5d-9de7-52d6255d0639",
+      "start_time": 1789528247650,
+      "end_time": 1789532387650
+    },
+    {
+      "id": "4bae042c-c8e8-4765-97f6-1fbf287bc8c1",
+      "start_time": 1789540419318,
+      "end_time": 1789544739318
+    },
+    {
+      "id": "c5cb0dbc-9349-43ca-9f75-adbaf9b2a698",
+      "start_time": 1789548784186,
+      "end_time": 1789551244186
+    },
+    {
+      "id": "f1500a6b-6718-4e14-ac40-e86c482e91bc",
+      "start_time": 1789560169323,
+      "end_time": 1789564729323
+    },
+    {
+      "id": "9ad00fff-687f-473a-81fa-9cae09da12e4",
+      "start_time": 1789574928022,
+      "end_time": 1789576728022
+    }
+  ]
+}
