@@ -34,10 +34,10 @@ export function Timer() {
         <div className="flex h-full flex-col items-center justify-center gap-10 sm:gap-14 select-none">
             {/* Timer digits display */}
             <div className="flex items-baseline gap-1 font-martian tabular-nums select-none whitespace-nowrap">
-                <span className="text-4xl min-[380px]:text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight">
+                <span className="text-[3.25rem] min-[390px]:text-[3.5rem] sm:text-7xl lg:text-8xl font-semibold tracking-tight leading-none">
                     {main}
                 </span>
-                <span className="text-lg min-[380px]:text-xl sm:text-3xl lg:text-4xl font-medium text-muted-foreground">
+                <span className="text-xl min-[390px]:text-2xl sm:text-3xl lg:text-4xl font-medium text-muted-foreground leading-none">
                     .{centiseconds}
                 </span>
             </div>
