@@ -33,11 +33,11 @@ export function Timer() {
     return (
         <div className="flex h-full flex-col items-center justify-center gap-10 sm:gap-14 select-none">
             {/* Timer digits display */}
-            <div className="flex items-baseline gap-1 font-martian tabular-nums">
-                <span className="text-6xl font-semibold tracking-tight sm:text-7xl lg:text-8xl">
+            <div className="flex items-baseline gap-1 font-martian tabular-nums select-none whitespace-nowrap">
+                <span className="text-4xl min-[380px]:text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight">
                     {main}
                 </span>
-                <span className="text-2xl font-medium text-muted-foreground sm:text-3xl lg:text-4xl">
+                <span className="text-lg min-[380px]:text-xl sm:text-3xl lg:text-4xl font-medium text-muted-foreground">
                     .{centiseconds}
                 </span>
             </div>
