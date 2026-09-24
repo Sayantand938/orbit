@@ -8,6 +8,7 @@ import {
     Sun,
     Trash2,
     Upload,
+    Wifi,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,6 +30,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import { SyncDialog } from "@/components/sync-dialog"
 import { useTheme } from "@/components/theme-provider"
 import { useTimerStore, type Session } from "@/store/timer"
 import {
@@ -56,6 +58,7 @@ export function Settings() {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [pendingImport, setPendingImport] = useState<Session[] | null>(null)
     const [importOpen, setImportOpen] = useState(false)
+    const [syncOpen, setSyncOpen] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [status, setStatus] = useState<string | null>(null)
 
@@ -187,6 +190,27 @@ export function Settings() {
                         </span>
                     </div>
 
+                    {/* Local Wi-Fi Sync Row */}
+                    <div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">
+                                Local Wi-Fi Sync
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Directly sync with PC or phone on the same network.
+                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSyncOpen(true)}
+                            className="w-fit shrink-0"
+                        >
+                            <Wifi className="size-3.5" />
+                            Sync Devices
+                        </Button>
+                    </div>
+
                     {/* Export */}
                     <div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center">
                         <div>
@@ -299,6 +323,9 @@ export function Settings() {
                     </div>
                 </div>
             </section>
+
+            {/* Sync Dialog Modal */}
+            <SyncDialog open={syncOpen} onOpenChange={setSyncOpen} />
 
             {/* Import Dialog */}
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
