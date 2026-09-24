@@ -22,22 +22,16 @@ export function SessionList({ slices, onEdit, onDelete }: SessionListProps) {
     }
 
     return (
-        <div className="relative">
-            <span
-                aria-hidden
-                className="absolute top-4 bottom-4 left-[17px] w-px bg-border"
-            />
-            <ul className="flex list-none flex-col p-0">
-                {slices.map((slice, i) => (
-                    <SessionRow
-                        key={`${slice.session.id}:${slice.start_time}`}
-                        slice={slice}
-                        index={i + 1}
-                        onEdit={onEdit}
-                        onDelete={onDelete}
-                    />
-                ))}
-            </ul>
-        </div>
+        <ul className="flex list-none flex-col gap-2.5 p-0 sm:gap-3">
+            {slices.map((slice, i) => (
+                <SessionRow
+                    key={`${slice.session.id}:${slice.start_time}`}
+                    slice={slice}
+                    index={i + 1}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                />
+            ))}
+        </ul>
     )
 }

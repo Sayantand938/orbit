@@ -21,7 +21,7 @@ export function History() {
     const deleteSession = useTimerStore((s) => s.deleteSession)
 
     const [date, setDate] = useState<Date>(() => new Date())
-    const [view, setView] = useState<View>("logs")
+    const [view, setView] = useState<View>("hourly")
     const [editingSession, setEditingSession] = useState<Session | null>(null)
     const [editOpen, setEditOpen] = useState(false)
 
@@ -58,28 +58,28 @@ export function History() {
             <div className="flex">
                 <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
                     <ViewButton
-                        active={view === "logs"}
-                        onClick={() => setView("logs")}
-                    >
-                        Logs
-                    </ViewButton>
-                    <ViewButton
                         active={view === "hourly"}
                         onClick={() => setView("hourly")}
                     >
                         Hourly
                     </ViewButton>
+                    <ViewButton
+                        active={view === "logs"}
+                        onClick={() => setView("logs")}
+                    >
+                        Logs
+                    </ViewButton>
                 </div>
             </div>
 
-            {view === "logs" ? (
+            {view === "hourly" ? (
+                <HourlyStats slices={daySlices} />
+            ) : (
                 <SessionList
                     slices={daySlices}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                 />
-            ) : (
-                <HourlyStats slices={daySlices} />
             )}
 
             <EditSessionDialog

@@ -31,18 +31,16 @@ export function App() {
 
   return (
     <div className="flex min-h-svh bg-background text-foreground">
-      {/* Desktop sidebar */}
-      <div className="hidden md:block">
-        <AppSidebar
-          activePage={page}
-          onNavigate={setPage}
-          collapsed={collapsed}
-          onToggle={toggleSidebar}
-        />
-      </div>
+      {/* Desktop sidebar pinned full-height */}
+      <AppSidebar
+        activePage={page}
+        onNavigate={setPage}
+        collapsed={collapsed}
+        onToggle={toggleSidebar}
+      />
 
-      {/* Main content — extra bottom padding on mobile for the tab bar */}
-      <main className="flex-1 overflow-auto p-4 pb-24 sm:p-6 md:pb-6">
+      {/* Main content pane — min-w-0 prevents flex children from compressing the sidebar */}
+      <main className="flex-1 min-w-0 overflow-auto p-4 pb-24 sm:p-6 md:pb-6">
         <ErrorBoundary
           key={page}
           fallback={(reset) => <PageErrorFallback onReset={reset} />}

@@ -1,5 +1,7 @@
 import { useRef, useState } from "react"
 import {
+    AlertCircle,
+    Check,
     Download,
     Monitor,
     Moon,
@@ -7,7 +9,6 @@ import {
     Trash2,
     Upload,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,
@@ -60,7 +61,8 @@ export function Settings() {
 
     const handleExport = () => {
         downloadJson(buildExport(sessions), exportFilename())
-        setStatus(`Exported ${sessions.length} sessions.`)
+        setStatus(`Exported ${sessions.length} sessions successfully.`)
+        setError(null)
     }
 
     const handleFile = async (file: File) => {
@@ -82,94 +84,148 @@ export function Settings() {
         replaceAll(result.sessions)
         setStatus(
             mode === "replace"
-                ? `Replaced with ${result.added} sessions.`
-                : `Added ${result.added} new, skipped ${result.skipped} duplicates.`
+                ? `Replaced database with ${result.added} sessions.`
+                : `Added ${result.added} new sessions (${result.skipped} duplicates skipped).`
         )
         setImportOpen(false)
         setPendingImport(null)
     }
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 pb-10">
+            {/* Header */}
             <div>
-                <h1 className="text-2xl font-semibold">Settings</h1>
-                <p className="text-muted-foreground">
-                    Customize how Orbit looks and behaves.
+                <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+                <p className="text-sm text-muted-foreground">
+                    Manage your preferences, data exports, and local storage.
                 </p>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Appearance</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                    <p className="text-sm text-muted-foreground">
-                        Choose how the app looks. System follows your OS
-                        preference.
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 sm:max-w-md">
-                        {themeOptions.map(({ value, label, icon: Icon }) => {
-                            const isActive = theme === value
-                            return (
-                                <Button
-                                    key={value}
-                                    variant="outline"
-                                    onClick={() => setTheme(value)}
-                                    className={cn(
-                                        "h-auto flex-col gap-2 py-4",
-                                        isActive &&
-                                        "border-primary bg-primary/5 text-foreground hover:bg-primary/10"
-                                    )}
-                                >
-                                    <Icon className="size-5" />
-                                    <span className="text-sm font-medium">
-                                        {label}
-                                    </span>
-                                </Button>
-                            )
-                        })}
+            {/* Inline Feedback Alerts */}
+            {status && (
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3.5 py-2.5 text-xs text-foreground">
+                    <Check className="size-4 shrink-0 text-emerald-500" />
+                    <span>{status}</span>
+                </div>
+            )}
+            {error && (
+                <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-xs text-destructive">
+                    <AlertCircle className="size-4 shrink-0" />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {/* Appearance Section */}
+            <section className="space-y-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Appearance
+                </h2>
+                <div className="rounded-xl border border-border bg-card">
+                    <div className="flex flex-col justify-between gap-4 p-4 sm:flex-row sm:items-center">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">Theme</p>
+                            <p className="text-xs text-muted-foreground">
+                                Select how Orbit appears on this device.
+                            </p>
+                        </div>
+
+                        {/* Segmented Pill Theme Switcher */}
+                        <div className="inline-flex items-center rounded-lg border border-border bg-muted/40 p-1">
+                            {themeOptions.map(({ value, label, icon: Icon }) => {
+                                const isActive = theme === value
+                                return (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => setTheme(value)}
+                                        className={cn(
+                                            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all outline-hidden",
+                                            isActive
+                                                ? "bg-background text-foreground shadow-xs"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                    >
+                                        <Icon className="size-3.5" />
+                                        <span>{label}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Tip: press{" "}
-                        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.7rem]">
-                            d
-                        </kbd>{" "}
-                        anywhere to toggle between light and dark.
-                    </p>
-                </CardContent>
-            </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Data</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                    <p className="text-sm text-muted-foreground">
-                        Orbit stores everything locally in your browser.{" "}
-                        <span className="font-mono tabular-nums">
-                            {sessions.length}
-                        </span>{" "}
-                        recorded{" "}
-                        {sessions.length === 1 ? "session" : "sessions"}.
-                    </p>
+                    <div className="border-t border-border/50 px-4 py-2.5">
+                        <p className="text-[0.75rem] text-muted-foreground">
+                            Tip: Press{" "}
+                            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.65rem] text-foreground">
+                                D
+                            </kbd>{" "}
+                            anywhere to quickly toggle light and dark mode.
+                        </p>
+                    </div>
+                </div>
+            </section>
 
-                    <div className="flex flex-wrap gap-2">
+            {/* Data & Storage Section */}
+            <section className="space-y-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Data & Storage
+                </h2>
+                <div className="divide-y divide-border/60 rounded-xl border border-border bg-card">
+                    {/* Database status row */}
+                    <div className="flex items-center justify-between gap-4 p-4">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">
+                                Storage Status
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Local browser database (IndexedDB).
+                            </p>
+                        </div>
+                        <span className="rounded-md border border-border/60 bg-muted/50 px-2.5 py-1 font-mono text-xs font-medium tabular-nums text-foreground">
+                            {sessions.length}{" "}
+                            {sessions.length === 1 ? "session" : "sessions"}
+                        </span>
+                    </div>
+
+                    {/* Export */}
+                    <div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">
+                                Export Sessions
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Download your complete history as an Orbit JSON file.
+                            </p>
+                        </div>
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleExport}
                             disabled={sessions.length === 0}
+                            className="w-fit shrink-0"
                         >
-                            <Download className="size-4" />
+                            <Download className="size-3.5" />
                             Export JSON
                         </Button>
+                    </div>
 
+                    {/* Import */}
+                    <div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">
+                                Import Sessions
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Merge or restore sessions from a previous JSON backup.
+                            </p>
+                        </div>
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => fileInputRef.current?.click()}
+                            className="w-fit shrink-0"
                         >
-                            <Upload className="size-4" />
+                            <Upload className="size-3.5" />
                             Import JSON
                         </Button>
                         <input
@@ -184,73 +240,85 @@ export function Settings() {
                             }}
                         />
                     </div>
+                </div>
+            </section>
 
-                    {error && (
-                        <p className="text-sm text-destructive">{error}</p>
-                    )}
-                    {status && (
-                        <p className="text-sm text-muted-foreground">{status}</p>
-                    )}
+            {/* Danger Zone */}
+            <section className="space-y-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-destructive/80">
+                    Danger Zone
+                </h2>
+                <div className="rounded-xl border border-destructive/25 bg-destructive/[0.02] p-4">
+                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">
+                                Clear All Data
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Permanently wipe all recorded sessions and logs from this device.
+                            </p>
+                        </div>
 
-                    <AlertDialog>
-                        <AlertDialogTrigger
-                            render={
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    className="w-fit"
-                                    disabled={sessions.length === 0}
-                                >
-                                    <Trash2 className="size-4" />
-                                    Clear all data
-                                </Button>
-                            }
-                        />
-                        <AlertDialogContent size="sm">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    Clear all data?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This permanently deletes every session from
-                                    your history. This action cannot be undone.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    variant="destructive"
-                                    onClick={() => {
-                                        reset()
-                                        setStatus("All data cleared.")
-                                    }}
-                                >
-                                    Clear everything
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </CardContent>
-            </Card>
+                        <AlertDialog>
+                            <AlertDialogTrigger
+                                render={
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className="w-fit shrink-0"
+                                        disabled={sessions.length === 0}
+                                    >
+                                        <Trash2 className="size-3.5" />
+                                        Clear data
+                                    </Button>
+                                }
+                            />
+                            <AlertDialogContent size="sm">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Clear all data?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This permanently deletes every session from
+                                        your history. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        variant="destructive"
+                                        onClick={() => {
+                                            reset()
+                                            setStatus("All session data has been erased.")
+                                            setError(null)
+                                        }}
+                                    >
+                                        Clear everything
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                </div>
+            </section>
 
+            {/* Import Dialog */}
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Import sessions</DialogTitle>
                         <DialogDescription>
                             Found{" "}
-                            <span className="font-mono tabular-nums">
+                            <span className="font-mono font-medium tabular-nums text-foreground">
                                 {pendingImport?.length ?? 0}
                             </span>{" "}
-                            sessions in the file. How should they be combined
-                            with your existing{" "}
-                            <span className="font-mono tabular-nums">
+                            sessions in the file. Choose how to combine them with your
+                            existing{" "}
+                            <span className="font-mono font-medium tabular-nums text-foreground">
                                 {sessions.length}
                             </span>
-                            ?
+                            :
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="sm:justify-end">
+                    <DialogFooter className="gap-2 sm:justify-end">
                         <Button
                             variant="outline"
                             onClick={() => setImportOpen(false)}
@@ -272,6 +340,15 @@ export function Settings() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Minimal App Footer */}
+            <div className="flex items-center justify-center gap-2 pt-4 text-xs text-muted-foreground/60">
+                <span>Orbit</span>
+                <span>•</span>
+                <span>Local-First</span>
+                <span>•</span>
+                <span>Zero Tracking</span>
+            </div>
         </div>
     )
 }
