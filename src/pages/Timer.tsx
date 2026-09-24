@@ -31,9 +31,10 @@ export function Timer() {
     const { main, centiseconds } = formatTimeParts(elapsed)
 
     return (
-        <div className="flex h-full flex-col items-center justify-center gap-8">
+        <div className="flex h-full flex-col items-center justify-center gap-10 sm:gap-14 select-none">
+            {/* Timer digits display */}
             <div className="flex items-baseline gap-1 font-martian tabular-nums">
-                <span className="text-5xl font-semibold tracking-tight sm:text-7xl lg:text-8xl">
+                <span className="text-6xl font-semibold tracking-tight sm:text-7xl lg:text-8xl">
                     {main}
                 </span>
                 <span className="text-2xl font-medium text-muted-foreground sm:text-3xl lg:text-4xl">
@@ -41,34 +42,33 @@ export function Timer() {
                 </span>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Action buttons */}
+            <div className="flex items-center justify-center gap-5 sm:gap-6">
+                {/* Play / Pause primary button */}
                 <Button
-                    size="lg"
                     onClick={handleStartStop}
-                    className="min-w-28"
                     variant={running ? "secondary" : "default"}
+                    aria-label={running ? "Pause timer" : "Start timer"}
+                    title={running ? "Pause timer" : "Start timer"}
+                    className="size-16 sm:size-20 rounded-full p-0 shadow-md transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     {running ? (
-                        <>
-                            <Pause className="size-4" />
-                            Stop
-                        </>
+                        <Pause className="size-7 sm:size-8 fill-current" />
                     ) : (
-                        <>
-                            <Play className="size-4" />
-                            Start
-                        </>
+                        <Play className="size-7 sm:size-8 fill-current translate-x-0.5" />
                     )}
                 </Button>
+
+                {/* Reset button */}
                 <Button
-                    size="lg"
                     variant="outline"
                     onClick={discard}
                     disabled={!running}
-                    title="Discard the current run"
+                    aria-label="Reset timer"
+                    title="Reset timer"
+                    className="size-12 sm:size-14 rounded-full p-0 border-border/80 transition-all duration-200 hover:scale-105 active:scale-95 disabled:hover:scale-100"
                 >
-                    <RotateCcw className="size-4" />
-                    Reset
+                    <RotateCcw className="size-5 sm:size-6 text-muted-foreground" />
                 </Button>
             </div>
         </div>
